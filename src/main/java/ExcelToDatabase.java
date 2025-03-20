@@ -126,3 +126,20 @@ public class ExcelToDatabase {
         }
     }
 }
+//IP: 10.0.0.19
+//Puerto: 1433
+//Usuario: ipcwork
+//password: 1pcWR1t3R/*2025
+
+
+//server= ipcprod.database.windows.net
+//user= ipcreader
+//password = inzp5Y30xXwsOov
+//database= db-indices
+
+
+
+//IP: 10.0.0.19
+//Puerto: 1433
+//user= ipcreader
+//password = inzp5Y30xXwsOov
