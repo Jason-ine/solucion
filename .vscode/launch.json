@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "ExcelToDatabase",
+            "request": "launch",
+            "mainClass": "main.java.ExcelToDatabase", 
+            "projectName": "solution",
+            "classPaths": [
+                "${workspaceFolder}Lib/libs/*", 
+                "${workspaceFolder}/src/main/java" 
+            ]
+        }
+    ]
+}
