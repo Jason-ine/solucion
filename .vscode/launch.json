@@ -6,6 +6,13 @@
             "name": "ExcelToDatabase",
             "request": "launch",
             "mainClass": "main.java.ExcelToDatabase",
+            "projectName": "solucion_48c74343"
+        },
+        {
+            "type": "java",
+            "name": "ExcelToDatabase",
+            "request": "launch",
+            "mainClass": "main.java.ExcelToDatabase",
             "projectName": "solucion_1cf85139"
         },
         {

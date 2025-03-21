@@ -20,27 +20,27 @@ public class ExcelToDatabase {
     public static void main(String[] args) {
         // Procesar cada archivo Excel y tabla correspondiente
         procesarArchivoExcel(
-            "C:\\Users\\jason\\source\\repos\\solucion\\archivos_excel\\Base_IPM.xlsx",
+            "C:\\Users\\jdpivaral\\WebScraping\\solucion\\archivos_excel\\Base_IPM.xlsx",
             "SIP_IPM"
         );
 
         procesarArchivoExcel(
-            "C:\\Users\\jason\\source\\repos\\solucion\\archivos_excel\\EMPRESAS_IPP.xlsx",
+            "C:\\Users\\jdpivaral\\WebScraping\\solucion\\archivos_excel\\EMPRESAS_IPP.xlsx",
             "SIP_IPP"
         );
 
         procesarArchivoExcel(
-            "C:\\Users\\jason\\source\\repos\\solucion\\archivos_excel\\Regiones.xlsx",
+            "C:\\Users\\jdpivaral\\WebScraping\\solucion\\archivos_excel\\Regiones.xlsx",
             "SIP_Cobertura_Fuentes"
         );
 
         procesarArchivoExcel(
-            "C:\\Users\\jason\\source\\repos\\solucion\\archivos_excel\\Precios_promedio_IPC_x_mes_region.xlsx",
+            "C:\\Users\\jdpivaral\\WebScraping\\solucion\\archivos_excel\\Precios_promedio_IPC_x_mes_region.xlsx",
             "SIP_IPC_Precios_Promedio"
         );
 
         procesarArchivoExcel(
-            "C:\\Users\\jason\\source\\repos\\solucion\\archivos_excel\\Base_IPMC.xlsx",
+            "C:\\Users\\jdpivaral\\WebScraping\\solucion\\archivos_excel\\Base_IPMC.xlsx",
             "SIP_IPMC"
         );
     }
@@ -50,7 +50,7 @@ public class ExcelToDatabase {
         Connection conexion = null;
         try {
             // 1. Conectar a la base de datos (SQL Server)
-            String url = "jdbc:sqlserver://JASON_PIVARAL:1433;databaseName=db_excel;encrypt=true;trustServerCertificate=true";
+            String url = "jdbc:sqlserver://0057A31D:1433;databaseName=prod;encrypt=true;trustServerCertificate=true";
             String usu = "sa";
             String contraseña = "Abc$2020";
             conexion = DriverManager.getConnection(url, usu, contraseña);
@@ -132,61 +132,127 @@ public class ExcelToDatabase {
 
     // Método para procesar datos de la tabla SIP_IPM
     private static void procesarSIP_IPM(Sheet hoja, PreparedStatement pstmt, Map<String, Integer> columnas) throws Exception {
+
+        String region;
+        String departamento;
+        String municipio;
+        Double semana;
+        String usuario;
+        Double numeroBoleta;
+        String codigoTipoFuente;
+        String tipoFuenteNombre;
+        Double codigoFuente;
+        String nombreFuente;
+        String direccion;
+        Double zona;
+        Double latitud;
+        Double longitud;
+        Double georefenciada;
+        Double id;
+        Double correlativo;
+        String fechaStr;
+        String mes;
+        Double anio;
+        String latitudStr;
+        String longitudStr;
         for (Row fila : hoja) {
             // Saltar la primera fila (encabezados)
             if (fila.getRowNum() == 0) {
                 continue;
             }
-
+    
             // Obtener los valores de cada celda usando los nombres de las columnas
-            String region = obtenerValorCelda(fila.getCell(columnas.get("region")));
-            String departamento = obtenerValorCelda(fila.getCell(columnas.get("departamento")));
-            String municipio = obtenerValorCelda(fila.getCell(columnas.get("municipio")));
-            int semana = (int) obtenerValorNumerico(fila.getCell(columnas.get("semana")));
-            String usuario = obtenerValorCelda(fila.getCell(columnas.get("usuario")));
-            int numeroBoleta = (int) obtenerValorNumerico(fila.getCell(columnas.get("numero_boleta")));
-            String codigoTipoFuente = obtenerValorCelda(fila.getCell(columnas.get("codigo_tipo_fuente")));
-            String tipoFuenteNombre = obtenerValorCelda(fila.getCell(columnas.get("tipo_fuente_nombre")));
-            String codigoFuente = obtenerValorCelda(fila.getCell(columnas.get("codigo_fuente")));
-            String nombreFuente = obtenerValorCelda(fila.getCell(columnas.get("nombre_fuente")));
-            String direccion = obtenerValorCelda(fila.getCell(columnas.get("direccion")));
-            int zona = (int) obtenerValorNumerico(fila.getCell(columnas.get("zona")));
-            String latitud = obtenerValorCelda(fila.getCell(columnas.get("latitud")));
-            String longitud = obtenerValorCelda(fila.getCell(columnas.get("longitud")));
-            int georefenciada = (int) obtenerValorNumerico(fila.getCell(columnas.get("georefenciada")));
-            int id = (int) obtenerValorNumerico(fila.getCell(columnas.get("id")));
-            int correlativo = (int) obtenerValorNumerico(fila.getCell(columnas.get("correlativo")));
-            String fechaStr = obtenerValorCelda(fila.getCell(columnas.get("fecha")));
-            String mes = obtenerValorCelda(fila.getCell(columnas.get("mes")));
-            int anio = (int) obtenerValorNumerico(fila.getCell(columnas.get("anio")));
-
+            region = obtenerValorCelda(fila.getCell(columnas.get("region")));
+            departamento = obtenerValorCelda(fila.getCell(columnas.get("departamento")));
+            municipio = obtenerValorCelda(fila.getCell(columnas.get("municipio")));
+            semana = obtenerValorNumerico(fila.getCell(columnas.get("semana")));
+            usuario = obtenerValorCelda(fila.getCell(columnas.get("usuario")));
+            numeroBoleta = obtenerValorNumerico(fila.getCell(columnas.get("numero_boleta")));
+            codigoTipoFuente = obtenerValorCelda(fila.getCell(columnas.get("codigo_tipo_fuente")));
+            tipoFuenteNombre = obtenerValorCelda(fila.getCell(columnas.get("tipo_fuente_nombre")));
+            codigoFuente = obtenerValorNumerico(fila.getCell(columnas.get("codigo_fuente"))); // Obtener como Double
+            nombreFuente = obtenerValorCelda(fila.getCell(columnas.get("nombre_fuente")));
+            direccion = obtenerValorCelda(fila.getCell(columnas.get("direccion")));
+            zona = obtenerValorNumerico(fila.getCell(columnas.get("zona")));
+            latitud = obtenerValorNumerico(fila.getCell(columnas.get("latitud"))); // Leer como double
+            longitud = obtenerValorNumerico(fila.getCell(columnas.get("longitud"))); // Leer como double
+            georefenciada = obtenerValorNumerico(fila.getCell(columnas.get("georefenciada")));
+            id = obtenerValorNumerico(fila.getCell(columnas.get("id")));
+            correlativo = obtenerValorNumerico(fila.getCell(columnas.get("correlativo")));
+            fechaStr = obtenerValorCelda(fila.getCell(columnas.get("fecha")));
+            mes = obtenerValorCelda(fila.getCell(columnas.get("mes")));
+            anio = obtenerValorNumerico(fila.getCell(columnas.get("anio")));
+    
             // Convertir la fecha de String a Timestamp
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date fecha = dateFormat.parse(fechaStr);
-            Timestamp fechaTimestamp = new Timestamp(fecha.getTime());
-
+            Timestamp fechaTimestamp = null;
+            if (fechaStr != null) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                Date fecha = dateFormat.parse(fechaStr);
+                fechaTimestamp = new Timestamp(fecha.getTime());
+            }
+    
+            // Convertir latitud y longitud a String
+            latitudStr = (latitud != null) ? String.valueOf(latitud) : null;
+            longitudStr = (longitud != null) ? String.valueOf(longitud) : null;
+    
             // Asignar los valores a la consulta SQL
             pstmt.setString(1, region);
             pstmt.setString(2, departamento);
             pstmt.setString(3, municipio);
-            pstmt.setInt(4, semana);
+            if (semana != null) {
+                pstmt.setInt(4, semana.intValue());
+            } else {
+                pstmt.setNull(4, java.sql.Types.INTEGER);
+            }
             pstmt.setString(5, usuario);
-            pstmt.setInt(6, numeroBoleta);
+            if (numeroBoleta != null) {
+                pstmt.setInt(6, numeroBoleta.intValue());
+            } else {
+                pstmt.setNull(6, java.sql.Types.INTEGER);
+            }
             pstmt.setString(7, codigoTipoFuente);
             pstmt.setString(8, tipoFuenteNombre);
-            pstmt.setString(9, codigoFuente);
+            if (codigoFuente != null) {
+                pstmt.setInt(9, codigoFuente.intValue()); // Convertir a int
+            } else {
+                pstmt.setNull(9, java.sql.Types.INTEGER);
+            }
             pstmt.setString(10, nombreFuente);
             pstmt.setString(11, direccion);
-            pstmt.setInt(12, zona);
-            pstmt.setString(13, latitud);
-            pstmt.setString(14, longitud);
-            pstmt.setInt(15, georefenciada);
-            pstmt.setInt(16, id);
-            pstmt.setInt(17, correlativo);
-            pstmt.setTimestamp(18, fechaTimestamp);
+            if (zona != null) {
+                pstmt.setInt(12, zona.intValue());
+            } else {
+                pstmt.setNull(12, java.sql.Types.INTEGER);
+            }
+            pstmt.setString(13, latitudStr); // Insertar como String
+            pstmt.setString(14, longitudStr); // Insertar como String
+            if (georefenciada != null) {
+                pstmt.setInt(15, georefenciada.intValue());
+            } else {
+                pstmt.setNull(15, java.sql.Types.INTEGER);
+            }
+            if (id != null) {
+                pstmt.setInt(16, id.intValue());
+            } else {
+                pstmt.setNull(16, java.sql.Types.INTEGER);
+            }
+            if (correlativo != null) {
+                pstmt.setInt(17, correlativo.intValue());
+            } else {
+                pstmt.setNull(17, java.sql.Types.INTEGER);
+            }
+            if (fechaTimestamp != null) {
+                pstmt.setTimestamp(18, fechaTimestamp);
+            } else {
+                pstmt.setNull(18, java.sql.Types.TIMESTAMP);
+            }
             pstmt.setString(19, mes);
-            pstmt.setInt(20, anio);
-
+            if (anio != null) {
+                pstmt.setInt(20, anio.intValue());
+            } else {
+                pstmt.setNull(20, java.sql.Types.INTEGER);
+            }
+    
             // Ejecutar la inserción
             pstmt.executeUpdate();
         }
@@ -194,40 +260,74 @@ public class ExcelToDatabase {
 
     // Método para procesar datos de la tabla SIP_IPP
     private static void procesarSIP_IPP(Sheet hoja, PreparedStatement pstmt, Map<String, Integer> columnas) throws Exception {
+        Double numero;
+        String estado;
+        String empadronada;
+        String tipoEmpresa;
+        Double codigoTipologia;
+        String tipologiaNombre;
+        String nit;
+        String ajuste;
+        String razonSocial;
+        String nombreComercial;
+        String direccion;
+        String departamento;
+        String municipio;
+        Double zona ;
+        Double latitud ;
+        Double longitud;
+        Double georeferenciada;
+        String telefono ;
+        String actividadEconomica ;
+        String ciiu ;
+        String latitudStr;
+        String longitudStr;
         for (Row fila : hoja) {
             // Saltar la primera fila (encabezados)
             if (fila.getRowNum() == 0) {
                 continue;
             }
-
+    
             // Obtener los valores de cada celda usando los nombres de las columnas
-            long numero = (long) obtenerValorNumerico(fila.getCell(columnas.get("numero")));
-            String estado = obtenerValorCelda(fila.getCell(columnas.get("estado")));
-            String empadronada = obtenerValorCelda(fila.getCell(columnas.get("empadronada")));
-            String tipoEmpresa = obtenerValorCelda(fila.getCell(columnas.get("tipo_empresa")));
-            long codigoTipologia = (long) obtenerValorNumerico(fila.getCell(columnas.get("codigo_tipologia")));
-            String tipologiaNombre = obtenerValorCelda(fila.getCell(columnas.get("tipologia_nombre")));
-            String nit = obtenerValorCelda(fila.getCell(columnas.get("nit")));
-            String ajuste = obtenerValorCelda(fila.getCell(columnas.get("ajuste")));
-            String razonSocial = obtenerValorCelda(fila.getCell(columnas.get("razon_social")));
-            String nombreComercial = obtenerValorCelda(fila.getCell(columnas.get("nombre_comercial")));
-            String direccion = obtenerValorCelda(fila.getCell(columnas.get("direccion")));
-            String departamento = obtenerValorCelda(fila.getCell(columnas.get("departamento")));
-            String municipio = obtenerValorCelda(fila.getCell(columnas.get("municipio")));
-            long zona = (long) obtenerValorNumerico(fila.getCell(columnas.get("zona")));
-            String latitud = obtenerValorCelda(fila.getCell(columnas.get("latitud")));
-            String longitud = obtenerValorCelda(fila.getCell(columnas.get("longitud")));
-            long georeferenciada = (long) obtenerValorNumerico(fila.getCell(columnas.get("georeferenciada")));
-            String telefono = obtenerValorCelda(fila.getCell(columnas.get("telefono")));
-            String actividadEconomica = obtenerValorCelda(fila.getCell(columnas.get("actividad_economica")));
-            String ciiu = obtenerValorCelda(fila.getCell(columnas.get("ciiu")));
-
+            numero = obtenerValorNumerico(fila.getCell(columnas.get("numero")));
+            estado = obtenerValorCelda(fila.getCell(columnas.get("estado")));
+            empadronada = obtenerValorCelda(fila.getCell(columnas.get("empadronada")));
+            tipoEmpresa = obtenerValorCelda(fila.getCell(columnas.get("tipo_empresa")));
+            codigoTipologia = obtenerValorNumerico(fila.getCell(columnas.get("codigo_tipologia")));
+            tipologiaNombre = obtenerValorCelda(fila.getCell(columnas.get("tipologia_nombre")));
+            nit = obtenerValorCelda(fila.getCell(columnas.get("nit"))); // Obtener el NIT como texto
+            ajuste = obtenerValorCelda(fila.getCell(columnas.get("ajuste")));
+            razonSocial = obtenerValorCelda(fila.getCell(columnas.get("razon_social")));
+            nombreComercial = obtenerValorCelda(fila.getCell(columnas.get("nombre_comercial")));
+            direccion = obtenerValorCelda(fila.getCell(columnas.get("direccion")));
+            departamento = obtenerValorCelda(fila.getCell(columnas.get("departamento")));
+            municipio = obtenerValorCelda(fila.getCell(columnas.get("municipio")));
+            zona = obtenerValorNumerico(fila.getCell(columnas.get("zona")));
+            latitud = obtenerValorNumerico(fila.getCell(columnas.get("latitud"))); // Leer como double
+            longitud = obtenerValorNumerico(fila.getCell(columnas.get("longitud"))); // Leer como double
+            georeferenciada = obtenerValorNumerico(fila.getCell(columnas.get("georeferenciada")));
+            telefono = obtenerValorCelda(fila.getCell(columnas.get("telefono")));
+            actividadEconomica = obtenerValorCelda(fila.getCell(columnas.get("actividad_economica")));
+            ciiu = obtenerValorCelda(fila.getCell(columnas.get("ciiu")));
+    
+            // Convertir latitud y longitud a String
+            latitudStr = (latitud != null) ? String.valueOf(latitud) : null;
+            longitudStr = (longitud != null) ? String.valueOf(longitud) : null;
+    
             // Asignar los valores a la consulta SQL
-            pstmt.setLong(1, numero);
+            if (numero != null) {
+                pstmt.setDouble(1, numero);
+            } else {
+                pstmt.setNull(1, java.sql.Types.DOUBLE);
+            }
             pstmt.setString(2, estado);
             pstmt.setString(3, empadronada);
             pstmt.setString(4, tipoEmpresa);
-            pstmt.setLong(5, codigoTipologia);
+            if (codigoTipologia != null) {
+                pstmt.setLong(5, codigoTipologia.longValue());
+            } else {
+                pstmt.setNull(5, java.sql.Types.BIGINT);
+            }
             pstmt.setString(6, tipologiaNombre);
             pstmt.setString(7, nit);
             pstmt.setString(8, ajuste);
@@ -236,14 +336,22 @@ public class ExcelToDatabase {
             pstmt.setString(11, direccion);
             pstmt.setString(12, departamento);
             pstmt.setString(13, municipio);
-            pstmt.setLong(14, zona);
-            pstmt.setString(15, latitud);
-            pstmt.setString(16, longitud);
-            pstmt.setLong(17, georeferenciada);
+            if (zona != null) {
+                pstmt.setLong(14, zona.longValue());
+            } else {
+                pstmt.setNull(14, java.sql.Types.BIGINT);
+            }
+            pstmt.setString(15, latitudStr); // Insertar como String
+            pstmt.setString(16, longitudStr); // Insertar como String
+            if (georeferenciada != null) {
+                pstmt.setLong(17, georeferenciada.longValue());
+            } else {
+                pstmt.setNull(17, java.sql.Types.BIGINT);
+            }
             pstmt.setString(18, telefono);
             pstmt.setString(19, actividadEconomica);
             pstmt.setString(20, ciiu);
-
+    
             // Ejecutar la inserción
             pstmt.executeUpdate();
         }
@@ -251,24 +359,36 @@ public class ExcelToDatabase {
 
     // Método para procesar datos de la tabla SIP_Cobertura_Fuentes
     private static void procesarSIP_Cobertura_Fuentes(Sheet hoja, PreparedStatement pstmt, Map<String, Integer> columnas) throws Exception {
+        Double regionId;
+        String ubicacion;
+        Double faltantes;
+        String departamento;
         for (Row fila : hoja) {
             // Saltar la primera fila (encabezados)
             if (fila.getRowNum() == 0) {
                 continue;
             }
-
+    
             // Obtener los valores de cada celda usando los nombres de las columnas
-            long regionId = (long) obtenerValorNumerico(fila.getCell(columnas.get("region_id")));
-            String ubicacion = obtenerValorCelda(fila.getCell(columnas.get("ubicacion")));
-            long faltantes = (long) obtenerValorNumerico(fila.getCell(columnas.get("faltantes")));
-            String departamento = obtenerValorCelda(fila.getCell(columnas.get("departamento")));
-
+            regionId = obtenerValorNumerico(fila.getCell(columnas.get("region_id")));
+            ubicacion = obtenerValorCelda(fila.getCell(columnas.get("ubicacion")));
+            faltantes = obtenerValorNumerico(fila.getCell(columnas.get("faltantes")));
+            departamento = obtenerValorCelda(fila.getCell(columnas.get("departamento")));
+    
             // Asignar los valores a la consulta SQL
-            pstmt.setLong(1, regionId);
+            if (regionId != null) {
+                pstmt.setLong(1, regionId.longValue());
+            } else {
+                pstmt.setNull(1, java.sql.Types.BIGINT);
+            }
             pstmt.setString(2, ubicacion);
-            pstmt.setLong(3, faltantes);
+            if (faltantes != null) {
+                pstmt.setLong(3, faltantes.longValue());
+            } else {
+                pstmt.setNull(3, java.sql.Types.BIGINT);
+            }
             pstmt.setString(4, departamento);
-
+    
             // Ejecutar la inserción
             pstmt.executeUpdate();
         }
@@ -276,42 +396,107 @@ public class ExcelToDatabase {
 
     // Método para procesar datos de la tabla SIP_IPC_Precios_Promedio
     private static void procesarSIP_IPC_Precios_Promedio(Sheet hoja, PreparedStatement pstmt, Map<String, Integer> columnas) throws Exception {
+        Double codigoProducto;
+        String productoNombre;
+        Double codigoVariedad;
+        String variedadNombre;
+        Double regionId;
+        Double cantidadBase;
+        Double precio;
+        Double variacion;
+        Double anio ;
+        Double mes;
         for (Row fila : hoja) {
             // Saltar la primera fila (encabezados)
             if (fila.getRowNum() == 0) {
                 continue;
             }
-
+    
             // Obtener los valores de cada celda usando los nombres de las columnas
-            long codigoProducto = (long) obtenerValorNumerico(fila.getCell(columnas.get("cod_prod")));
-            String productoNombre = obtenerValorCelda(fila.getCell(columnas.get("producto_nombre")));
-            long codigoVariedad = (long) obtenerValorNumerico(fila.getCell(columnas.get("codigo_articulo")));
-            String variedadNombre = obtenerValorCelda(fila.getCell(columnas.get("articulo")));
-            long regionId = (long) obtenerValorNumerico(fila.getCell(columnas.get("region_id")));
-            double cantidadBase = obtenerValorNumerico(fila.getCell(columnas.get("cant_b")));
-            double precio = obtenerValorNumerico(fila.getCell(columnas.get("pgeo")));
-            double variacion = obtenerValorNumerico(fila.getCell(columnas.get("variacion")));
-            int anio = (int) obtenerValorNumerico(fila.getCell(columnas.get("anio")));
-            int mes = (int) obtenerValorNumerico(fila.getCell(columnas.get("mes")));
-
+            codigoProducto = obtenerValorNumerico(fila.getCell(columnas.get("cod_prod")));
+            productoNombre = obtenerValorCelda(fila.getCell(columnas.get("producto_nombre")));
+            codigoVariedad = obtenerValorNumerico(fila.getCell(columnas.get("codigo_articulo")));
+            variedadNombre = obtenerValorCelda(fila.getCell(columnas.get("articulo")));
+            regionId = obtenerValorNumerico(fila.getCell(columnas.get("region_id")));
+            cantidadBase = obtenerValorNumerico(fila.getCell(columnas.get("cant_b")));
+            precio = obtenerValorNumerico(fila.getCell(columnas.get("pgeo")));
+            variacion = obtenerValorNumerico(fila.getCell(columnas.get("variacion")));
+            anio = obtenerValorNumerico(fila.getCell(columnas.get("anio")));
+            mes = obtenerValorNumerico(fila.getCell(columnas.get("mes")));
+    
             // Asignar los valores a la consulta SQL
-            pstmt.setLong(1, codigoProducto);
+            if (codigoProducto != null) {
+                pstmt.setLong(1, codigoProducto.longValue());
+            } else {
+                pstmt.setNull(1, java.sql.Types.BIGINT);
+            }
             pstmt.setString(2, productoNombre);
-            pstmt.setLong(3, codigoVariedad);
+            if (codigoVariedad != null) {
+                pstmt.setLong(3, codigoVariedad.longValue());
+            } else {
+                pstmt.setNull(3, java.sql.Types.BIGINT);
+            }
             pstmt.setString(4, variedadNombre);
-            pstmt.setLong(5, regionId);
-            pstmt.setDouble(6, cantidadBase);
-            pstmt.setDouble(7, precio);
-            pstmt.setDouble(8, variacion);
-            pstmt.setInt(9, anio);
-            pstmt.setInt(10, mes);
-
+            if (regionId != null) {
+                pstmt.setLong(5, regionId.longValue());
+            } else {
+                pstmt.setNull(5, java.sql.Types.BIGINT);
+            }
+            if (cantidadBase != null) {
+                pstmt.setDouble(6, cantidadBase);
+            } else {
+                pstmt.setNull(6, java.sql.Types.DOUBLE);
+            }
+            if (precio != null) {
+                pstmt.setDouble(7, precio);
+            } else {
+                pstmt.setNull(7, java.sql.Types.DOUBLE);
+            }
+            if (variacion != null) {
+                pstmt.setDouble(8, variacion);
+            } else {
+                pstmt.setNull(8, java.sql.Types.DOUBLE);
+            }
+            if (anio != null) {
+                pstmt.setInt(9, anio.intValue());
+            } else {
+                pstmt.setNull(9, java.sql.Types.INTEGER);
+            }
+            if (mes != null) {
+                pstmt.setInt(10, mes.intValue());
+            } else {
+                pstmt.setNull(10, java.sql.Types.INTEGER);
+            }
+    
             // Ejecutar la inserción
             pstmt.executeUpdate();
         }
     }
 
+    // Método para procesar datos de la tabla SIP_IPMC
     private static void procesarSIP_IPMC(Sheet hoja, PreparedStatement pstmt, Map<String, Integer> columnas) throws Exception {
+        String region;
+        String departamento;
+        String municipio;
+        Double semana;
+        String usuario;
+        Double numeroBoleta;
+        String codigoTipoFuente;
+        String tipoFuenteNombre;
+        String codigoFuente;
+        String nombreFuente;
+        String direccion;
+        Double zona;
+        Double latitud;
+        Double longitud;
+        Double georefenciada;
+        Double id;
+        Double correlativo;
+        String fechaStr;
+        String mes;
+        int anio;
+        String latitudStr;
+        String longitudStr;
         for (Row fila : hoja) {
             // Saltar la primera fila (encabezados)
             if (fila.getRowNum() == 0) {
@@ -319,53 +504,89 @@ public class ExcelToDatabase {
             }
     
             // Obtener los valores de cada celda usando los nombres de las columnas
-            String fechaStr = obtenerValorCelda(fila.getCell(columnas.get("fecha")));
-            String region = obtenerValorCelda(fila.getCell(columnas.get("region")));
-            String departamento = obtenerValorCelda(fila.getCell(columnas.get("departamento")));
-            String municipio = obtenerValorCelda(fila.getCell(columnas.get("municipio")));
-            int semana = (int) obtenerValorNumerico(fila.getCell(columnas.get("semana")));
-            String usuario = obtenerValorCelda(fila.getCell(columnas.get("usuario")));
-            int numeroBoleta = (int) obtenerValorNumerico(fila.getCell(columnas.get("numero_boleta")));
-            String codigoTipoFuente = obtenerValorCelda(fila.getCell(columnas.get("codigo_tipo_fuente")));
-            String tipoFuenteNombre = obtenerValorCelda(fila.getCell(columnas.get("tipo_fuente"))); // Mapeado a "tipo_fuente" en el Excel
-            String codigoFuente = obtenerValorCelda(fila.getCell(columnas.get("codigo_fuente")));
-            String nombreFuente = obtenerValorCelda(fila.getCell(columnas.get("nombre_fuente")));
-            String direccion = obtenerValorCelda(fila.getCell(columnas.get("direccion")));
-            int zona = (int) obtenerValorNumerico(fila.getCell(columnas.get("zona")));
-            String latitud = obtenerValorCelda(fila.getCell(columnas.get("gps_latitud"))); // Mapeado a "gps_latitud" en el Excel
-            String longitud = obtenerValorCelda(fila.getCell(columnas.get("gps_longitud"))); // Mapeado a "gps_longitud" en el Excel
-            int georefenciada = (int) obtenerValorNumerico(fila.getCell(columnas.get("georeferenciada"))); // Mapeado a "georeferenciada" en el Excel
-            int id = (int) obtenerValorNumerico(fila.getCell(columnas.get("id")));
-            int correlativo = (int) obtenerValorNumerico(fila.getCell(columnas.get("correlativo")));
-            String mes = obtenerValorCelda(fila.getCell(columnas.get("mes")));
+            fechaStr = obtenerValorCelda(fila.getCell(columnas.get("fecha")));
+            region = obtenerValorCelda(fila.getCell(columnas.get("region")));
+            departamento = obtenerValorCelda(fila.getCell(columnas.get("departamento")));
+            municipio = obtenerValorCelda(fila.getCell(columnas.get("municipio")));
+            semana = obtenerValorNumerico(fila.getCell(columnas.get("semana")));
+            usuario = obtenerValorCelda(fila.getCell(columnas.get("usuario")));
+            numeroBoleta = obtenerValorNumerico(fila.getCell(columnas.get("numero_boleta")));
+            codigoTipoFuente = obtenerValorCelda(fila.getCell(columnas.get("codigo_tipo_fuente")));
+            tipoFuenteNombre = obtenerValorCelda(fila.getCell(columnas.get("tipo_fuente")));
+            codigoFuente = obtenerValorCelda(fila.getCell(columnas.get("codigo_fuente")));
+            nombreFuente = obtenerValorCelda(fila.getCell(columnas.get("nombre_fuente")));
+            direccion = obtenerValorCelda(fila.getCell(columnas.get("direccion")));
+            zona = obtenerValorNumerico(fila.getCell(columnas.get("zona")));
+            latitud = obtenerValorNumerico(fila.getCell(columnas.get("gps_latitud"))); // Leer como double
+            longitud = obtenerValorNumerico(fila.getCell(columnas.get("gps_longitud"))); // Leer como double
+            georefenciada = obtenerValorNumerico(fila.getCell(columnas.get("georeferenciada")));
+            id = obtenerValorNumerico(fila.getCell(columnas.get("id")));
+            correlativo = obtenerValorNumerico(fila.getCell(columnas.get("correlativo")));
+            mes = obtenerValorCelda(fila.getCell(columnas.get("mes")));
     
             // Convertir la fecha de String a Timestamp
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date fecha = dateFormat.parse(fechaStr);
-            Timestamp fechaTimestamp = new Timestamp(fecha.getTime());
+            Timestamp fechaTimestamp = null;
+            if (fechaStr != null) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                Date fecha = dateFormat.parse(fechaStr);
+                fechaTimestamp = new Timestamp(fecha.getTime());
+            }
     
             // Extraer el año de la fecha
-            int anio = obtenerAnioDesdeFecha(fecha);
+            anio = obtenerAnioDesdeFecha(fechaTimestamp != null ? new Date(fechaTimestamp.getTime()) : new Date());
+    
+            // Convertir latitud y longitud a String
+            latitudStr = (latitud != null) ? String.valueOf(latitud) : null;
+            longitudStr = (longitud != null) ? String.valueOf(longitud) : null;
+    
     
             // Asignar los valores a la consulta SQL
             pstmt.setString(1, region);
             pstmt.setString(2, departamento);
             pstmt.setString(3, municipio);
-            pstmt.setInt(4, semana);
+            if (semana != null) {
+                pstmt.setInt(4, semana.intValue());
+            } else {
+                pstmt.setNull(4, java.sql.Types.INTEGER);
+            }
             pstmt.setString(5, usuario);
-            pstmt.setInt(6, numeroBoleta);
+            if (numeroBoleta != null) {
+                pstmt.setInt(6, numeroBoleta.intValue());
+            } else {
+                pstmt.setNull(6, java.sql.Types.INTEGER);
+            }
             pstmt.setString(7, codigoTipoFuente);
             pstmt.setString(8, tipoFuenteNombre);
             pstmt.setString(9, codigoFuente);
             pstmt.setString(10, nombreFuente);
             pstmt.setString(11, direccion);
-            pstmt.setInt(12, zona);
-            pstmt.setString(13, latitud);
-            pstmt.setString(14, longitud);
-            pstmt.setInt(15, georefenciada);
-            pstmt.setInt(16, id);
-            pstmt.setInt(17, correlativo);
-            pstmt.setTimestamp(18, fechaTimestamp);
+            if (zona != null) {
+                pstmt.setInt(12, zona.intValue());
+            } else {
+                pstmt.setNull(12, java.sql.Types.INTEGER);
+            }
+            pstmt.setString(13, latitudStr); // Insertar como String
+            pstmt.setString(14, longitudStr); // Insertar como String
+            if (georefenciada != null) {
+                pstmt.setInt(15, georefenciada.intValue());
+            } else {
+                pstmt.setNull(15, java.sql.Types.INTEGER);
+            }
+            if (id != null) {
+                pstmt.setInt(16, id.intValue());
+            } else {
+                pstmt.setNull(16, java.sql.Types.INTEGER);
+            }
+            if (correlativo != null) {
+                pstmt.setInt(17, correlativo.intValue());
+            } else {
+                pstmt.setNull(17, java.sql.Types.INTEGER);
+            }
+            if (fechaTimestamp != null) {
+                pstmt.setTimestamp(18, fechaTimestamp);
+            } else {
+                pstmt.setNull(18, java.sql.Types.TIMESTAMP);
+            }
             pstmt.setString(19, mes);
             pstmt.setInt(20, anio);
     
@@ -373,7 +594,6 @@ public class ExcelToDatabase {
             pstmt.executeUpdate();
         }
     }
-    
     // Método auxiliar para obtener el año desde una fecha
     private static int obtenerAnioDesdeFecha(Date fecha) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy");
@@ -381,32 +601,36 @@ public class ExcelToDatabase {
     }
     // Método auxiliar para obtener el valor de una celda como String
     private static String obtenerValorCelda(Cell celda) {
-        if (celda == null) {
-            return "";
+        if (celda == null || celda.getCellType() == CellType.BLANK) {
+            return null; // Devuelve null si la celda está vacía o es nula
         }
         switch (celda.getCellType()) {
             case STRING:
-                return celda.getStringCellValue();
+                return celda.getStringCellValue().trim(); // Devuelve el valor como texto
             case NUMERIC:
                 if (DateUtil.isCellDateFormatted(celda)) {
+                    // Si es una fecha, formatearla como texto
                     Date fecha = DateUtil.getJavaDate(celda.getNumericCellValue());
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     return dateFormat.format(fecha);
                 } else {
-                    return String.valueOf(celda.getNumericCellValue());
+                    // Si es un número, devolverlo como texto sin notación científica
+                    return String.valueOf((long) celda.getNumericCellValue());
                 }
             case BOOLEAN:
                 return String.valueOf(celda.getBooleanCellValue());
             default:
-                return "";
+                return null; // Devuelve null para otros tipos no manejados
         }
     }
-
     // Método auxiliar para obtener el valor de una celda como número
-    private static double obtenerValorNumerico(Cell celda) {
-        if (celda == null || celda.getCellType() != CellType.NUMERIC) {
-            return 0.0;
+    private static Double obtenerValorNumerico(Cell celda) {
+        if (celda == null || celda.getCellType() == CellType.BLANK) {
+            return null; // Devuelve null si la celda está vacía o es nula
         }
-        return celda.getNumericCellValue();
+        if (celda.getCellType() == CellType.NUMERIC) {
+            return celda.getNumericCellValue(); // Devuelve el valor numérico
+        }
+        return null; // Devuelve null para otros tipos no manejados
     }
 }
