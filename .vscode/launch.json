@@ -6,6 +6,13 @@
             "name": "ExcelToDatabase",
             "request": "launch",
             "mainClass": "main.java.ExcelToDatabase",
+            "projectName": "solucion_1cf85139"
+        },
+        {
+            "type": "java",
+            "name": "ExcelToDatabase",
+            "request": "launch",
+            "mainClass": "main.java.ExcelToDatabase",
             "projectName": "solution",
             "classPaths": [
                 "${workspaceFolder}/libb/Lib/libs/*",

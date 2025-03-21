@@ -2,22 +2,16 @@
     "java.project.sourcePaths": ["src"],
     "java.project.outputPath": "bin",
     "java.project.referencedLibraries": [
-        "libb/Lib/libs/jsoup-1.18.1.jar",
         "libb/Lib/libs/mssql-jdbc-12.8.1.jre8.jar",
-        "libb/Lib/libs/mssql-jdbc-12.8.1.jre11.jar",
         "libb/Lib/libs/poi-5.2.3.jar",
         "libb/Lib/libs/poi-ooxml-5.2.3.jar",
         "libb/Lib/libs/poi-ooxml-full-5.2.3.jar",
         "libb/Lib/libs/xmlbeans-5.1.1.jar",
         "libb/Lib/libs/commons-io-2.17.0.jar",
         "libb/Lib/libs/commons-collections4-4.4.jar",
-        "libb/Lib/libs/log4j-api-2.20.0.jar",
-        "libb/Lib/libs/log4j-core-2.20.0.jar",
         "libb/Lib/libs/commons-compress-1.21.jar",
-        "libb/Lib/libs/jcalendar-1.4.jar",
-        "libb/Lib/libs/jgoodies-common-1.2.0.jar",
-        "libb/Lib/libs/jgoodies-looks-2.4.1.jar",
-        "libb/Lib/libs/poi-ooxml-schemas-4.1.2.jar",
-        "libb/Lib/libs/junit-4.6.jar"
+        "libb/Lib/libs/log4j-api-2.20.0.jar",
+        "libb/Lib/libs/log4j-core-2.20.0.jar"
+
     ]
 }
