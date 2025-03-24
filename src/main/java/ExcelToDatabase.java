@@ -50,9 +50,9 @@ public class ExcelToDatabase {
         Connection conexion = null;
         try {
           
-            String url = "jdbc:sqlserver://10.0.0.19:1433;databaseName=TablerosIPC;encrypt=true;trustServerCertificate=true";
-            String usu = "ipcwork";
-            String contraseña = "1pcWR1t3R/*2025";
+            String url = "jdbc:sqlserver://0057A31D:1433;databaseName=prod;encrypt=true;trustServerCertificate=true";
+            String usu = "sa";
+            String contraseña = "Abc$2020";
             conexion = DriverManager.getConnection(url, usu, contraseña);
 
             // Leer el archivo Excel

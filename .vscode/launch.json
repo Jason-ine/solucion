@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CargarDatos",
+            "request": "launch",
+            "mainClass": "main.java.CargarDatos",
+            "projectName": "solucion_48c74343"
+        },
+        {
+            "type": "java",
             "name": "ExcelToDatabase",
             "request": "launch",
             "mainClass": "main.java.ExcelToDatabase",
