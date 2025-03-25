@@ -5,61 +5,87 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CargarDatos {
+    private static final int MAX_BLOCK_SIZE = 7500; // Ajustado exactamente al límite de tu SP
+    private static final int RECORDS_PER_BLOCK = 30; // Más conservador para tu estructura de datos
+    private static final int YEAR = 2023;
+    private static final int MONTH = 10;
 
     public static void main(String[] args) {
         // Configuración de conexiones
         String urlOrigen = "jdbc:sqlserver://0057A31D:1433;databaseName=prod;encrypt=true;trustServerCertificate=true";
-        String usuarioOrigen = "sa";
-        String contraseñaOrigen = "Abc$2020";
         String urlDestino = "jdbc:sqlserver://0057A31D:1433;databaseName=prod;encrypt=true;trustServerCertificate=true";
-        String usuarioDestino = "sa";
-        String contraseñaDestino = "Abc$2020";
+        String usuario = "sa";
+        String contraseña = "Abc$2020";
 
-        try (Connection conexionOrigen = DriverManager.getConnection(urlOrigen, usuarioOrigen, contraseñaOrigen);
-             Connection conexionDestino = DriverManager.getConnection(urlDestino, usuarioDestino, contraseñaDestino)) {
+        try (Connection conexionOrigen = DriverManager.getConnection(urlOrigen, usuario, contraseña);
+             Connection conexionDestino = DriverManager.getConnection(urlDestino, usuario, contraseña)) {
 
-            List<String> datos = obtenerDatosDesdeStoredProcedure(conexionOrigen);
-            String datosFormateados = formatearDatosParaParDatos(datos);
-            List<String> bloquesDatos = dividirDatosEnBloques(datosFormateados, 7000);
+            // 1. Limpieza inicial
+            limpiarDatosExistentes(conexionDestino, YEAR, MONTH);
+            
+            // 2. Obtención de datos
+            List<String> datos = obtenerDatos(conexionOrigen);
+            
+            // 3. Preparación de bloques
+            List<String> bloques = prepararBloquesDatos(datos);
+            
+            // 4. Ejecución por bloques
+            ejecutarBloques(conexionDestino, bloques, YEAR, MONTH);
 
-            for (String bloque : bloquesDatos) {
-                ejecutarStoredProcedure(conexionDestino, bloque);
-            }
-
-            System.out.println("Datos cargados exitosamente.");
+            System.out.println("Proceso completado exitosamente. Bloques procesados: " + bloques.size());
 
         } catch (SQLException e) {
-            System.err.println("Error al cargar datos:");
+            System.err.println("Error crítico en el proceso:");
             e.printStackTrace();
         }
     }
 
-    private static List<String> obtenerDatosDesdeStoredProcedure(Connection conexion) throws SQLException {
+    private static void limpiarDatosExistentes(Connection conexion, int anio, int mes) throws SQLException {
+        String sql = "{call dbo.sp_tran_SIP(?, ?, ?, ?)}";
+        try (CallableStatement cstmt = conexion.prepareCall(sql)) {
+            cstmt.setString(1, "LIMPIAR_IPC_INDICES_PONDERACIONES_COTIZACIONES");
+            cstmt.setInt(2, anio);
+            cstmt.setInt(3, mes);
+            cstmt.setString(4, "");
+            cstmt.execute();
+            System.out.println("Limpieza de datos existentes completada.");
+        }
+    }
+
+    private static List<String> obtenerDatos(Connection conexion) throws SQLException {
         List<String> datos = new ArrayList<>();
         String sql = "{call dbo.sp_NEW_get_indice_ponderaciones_cotizaciones(?, ?)}";
-        
+     
         try (CallableStatement cstmt = conexion.prepareCall(sql)) {
-            cstmt.setInt(1, 2023);
-            cstmt.setInt(2, 10);
-            ResultSet rs = cstmt.executeQuery();
-
-            while (rs.next()) {
-                String fila = construirFilaFormateada(rs);
-                datos.add(fila);
+            cstmt.setInt(1, YEAR);
+            cstmt.setInt(2, MONTH);
+            
+            System.out.println("Recuperando datos desde stored procedure...");
+            try (ResultSet rs = cstmt.executeQuery()) {
+                int contador = 0;
+                while (rs.next()) {
+                    datos.add(formatearFila(rs));
+                    contador++;
+                    
+                    if (contador % 1000 == 0) {
+                        System.out.println("Registros leídos: " + contador);
+                    }
+                }
+                System.out.println("Total registros obtenidos: " + contador);
             }
         }
         return datos;
     }
 
-    private static String construirFilaFormateada(ResultSet rs) throws SQLException {
+    private static String formatearFila(ResultSet rs) throws SQLException {
         return String.format(
-            "(%d, '%s', %f, %d, '%s', '%s', %f, %d, %d, %d, %s, %f, %f, %d, %d, %d, %d, %d, '%s', %d, %d, '%s')",
+            "(%d, '%s', %.18f, %d, '%s', '%s', %.18f, %d, %d, %d, %s, %.18f, %.18f, %d, %d, %d, %d, %d, '%s', %d, %d, '%s')",
             rs.getInt("region_id"),
-            escaparComillas(rs.getString("tipo_grupo")),
+            escapeSQL(rs.getString("tipo_grupo")),
             rs.getBigDecimal("ponderacion_republica"),
             rs.getInt("grupo_codigo"),
-            escaparComillas(rs.getString("grupo_nombre")),
-            escaparComillas(rs.getString("fuente_info")),
+            escapeSQL(rs.getString("grupo_nombre")),
+            escapeSQL(rs.getString("fuente_info")),
             rs.getBigDecimal("ponderacion_region"),
             rs.getInt("good_group_region_id"),
             rs.getInt("good_group_id"),
@@ -72,88 +98,100 @@ public class CargarDatos {
             rs.getInt("numero_pe"),
             rs.getInt("cotizaciones_realizadas"),
             rs.getInt("calculo_ipc"),
-            escaparComillas(rs.getString("estado")),
+            escapeSQL(rs.getString("estado")),
             rs.getInt("anio"),
             rs.getInt("mes"),
-            escaparComillas(rs.getString("nombre_mes"))
+            escapeSQL(rs.getString("nombre_mes"))
         );
     }
-
-    private static String escaparComillas(String valor) {
-        if (valor == null) {
-            return "";
-        }
-        // Escapar comillas simples y limpiar caracteres problemáticos
+    
+    private static String escapeSQL(String valor) {
+        if (valor == null) return "";
         return valor.replace("'", "''")
                    .replace("\n", " ")
                    .replace("\r", " ")
+                   .replace("\\", "\\\\")
                    .trim();
     }
 
-    private static String formatearDatosParaParDatos(List<String> datos) {
-        return String.join(",", datos);
-    }
-
-    private static List<String> dividirDatosEnBloques(String datos, int tamañoMaximo) {
+    private static List<String> prepararBloquesDatos(List<String> datos) {
         List<String> bloques = new ArrayList<>();
-        int inicio = 0;
-        
-        while (inicio < datos.length()) {
-            int fin = Math.min(inicio + tamañoMaximo, datos.length());
-            
-            if (fin < datos.length()) {
-                // Buscar el último paréntesis de cierre completo
-                int ultimoParentesis = datos.lastIndexOf("),", fin);
-                if (ultimoParentesis > inicio) {
-                    fin = ultimoParentesis + 1;
-                }
+        StringBuilder bloqueActual = new StringBuilder();
+        int registrosEnBloque = 0;
+
+        for (String fila : datos) {
+            if (debeCrearNuevoBloque(bloqueActual, fila, registrosEnBloque)) {
+                agregarBloque(bloques, bloqueActual);
+                bloqueActual = new StringBuilder();
+                registrosEnBloque = 0;
             }
-            
-            String bloque = datos.substring(inicio, fin).trim();
-            
-            // Asegurar que el bloque comience y termine correctamente
-            if (!bloque.startsWith("(")) {
-                int primerParentesis = bloque.indexOf('(');
-                if (primerParentesis > 0) {
-                    bloque = bloque.substring(primerParentesis);
-                }
+
+            if (bloqueActual.length() > 0) {
+                bloqueActual.append(",");
             }
-            
-            if (!bloque.endsWith(")")) {
-                int ultimoParentesis = bloque.lastIndexOf(')');
-                if (ultimoParentesis > 0) {
-                    bloque = bloque.substring(0, ultimoParentesis + 1);
-                }
-            }
-            
-            if (!bloque.isEmpty()) {
-                bloques.add(bloque);
-            }
-            
-            inicio = fin;
+            bloqueActual.append(fila);
+            registrosEnBloque++;
         }
-        
+
+        agregarBloque(bloques, bloqueActual);
+        System.out.println("Total bloques generados: " + bloques.size());
         return bloques;
     }
 
-    private static void ejecutarStoredProcedure(Connection conexion, String bloqueDatos) throws SQLException {
-        // Validación final del formato
-        if (!bloqueDatos.startsWith("(") || !bloqueDatos.endsWith(")")) {
-            System.err.println("Bloque mal formado - no se ejecutará: " + bloqueDatos.substring(0, Math.min(100, bloqueDatos.length())));
-            return;
+    private static boolean debeCrearNuevoBloque(StringBuilder bloqueActual, String nuevaFila, int registrosEnBloque) {
+        return bloqueActual.length() + nuevaFila.length() + 1 > MAX_BLOCK_SIZE || 
+               registrosEnBloque >= RECORDS_PER_BLOCK;
+    }
+
+    private static void agregarBloque(List<String> bloques, StringBuilder bloque) {
+        if (bloque.length() > 0) {
+            bloques.add(bloque.toString());
         }
+    }
 
-        System.out.println("Ejecutando bloque de " + bloqueDatos.length() + " caracteres");
-        System.out.println("Inicio: " + bloqueDatos.substring(0, Math.min(50, bloqueDatos.length())));
-        System.out.println("Fin: " + bloqueDatos.substring(Math.max(0, bloqueDatos.length() - 50)));
+    private static void ejecutarBloques(Connection conexion, List<String> bloques, int anio, int mes) throws SQLException {
+        int totalBloques = bloques.size();
+        int exitosos = 0;
+        
+        for (int i = 0; i < bloques.size(); i++) {
+            String bloque = bloques.get(i);
+            if (ejecutarBloque(conexion, bloque, anio, mes, i+1, totalBloques)) {
+                exitosos++;
+            }
+            
+            // Pequeña pausa cada 50 bloques para evitar sobrecarga
+            if ((i+1) % 50 == 0) {
+                try { Thread.sleep(500); } catch (InterruptedException e) {}
+            }
+        }
+        
+        System.out.println("Resumen: " + exitosos + "/" + totalBloques + " bloques procesados exitosamente");
+    }
 
+    private static boolean ejecutarBloque(Connection conexion, String bloque, int anio, int mes, 
+                                         int bloqueActual, int totalBloques) {
         String sql = "{call dbo.sp_tran_SIP(?, ?, ?, ?)}";
         try (CallableStatement cstmt = conexion.prepareCall(sql)) {
             cstmt.setString(1, "ADD_IPC_INDICES_PONDERACIONES_COTIZACIONES");
-            cstmt.setInt(2, 0);
-            cstmt.setInt(3, 0);
-            cstmt.setString(4, bloqueDatos);
+            cstmt.setInt(2, anio);
+            cstmt.setInt(3, mes);
+            cstmt.setString(4, bloque);
+            cstmt.setQueryTimeout(120); // 2 minutos de timeout
+            
+            System.out.printf("[Bloque %d/%d] Ejecutando (size: %d chars)...%n",
+                bloqueActual, totalBloques, bloque.length());
+            
             cstmt.execute();
+            return true;
+            
+        } catch (SQLException e) {
+            System.err.printf("Error en bloque %d/%d (size: %d chars): %s%n",
+                bloqueActual, totalBloques, bloque.length(), e.getMessage());
+            
+            // Log detallado del bloque problemático
+            System.err.println("Inicio bloque: " + bloque.substring(0, Math.min(100, bloque.length())));
+            System.err.println("Fin bloque: " + bloque.substring(Math.max(0, bloque.length() - 100)));
+            return false;
         }
     }
 }
