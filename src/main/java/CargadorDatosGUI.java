@@ -1,6 +1,8 @@
 package main.java;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,52 +20,74 @@ public class CargadorDatosGUI extends JFrame {
     }
 
     private void initialize() {
-        setTitle("Cargador de Datos SIP");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+    setTitle("Cargador de Datos SIP");
+    setSize(400, 300);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setLayout(new BorderLayout());
+    Color azulOscuro = new Color(6, 20, 86); // Color definido
+    Color blanco = Color.WHITE;
 
-        // Obtener fecha actual
-        LocalDate fechaActual = LocalDate.now();
-        int anioActual = fechaActual.getYear();
-        int mesActual = fechaActual.getMonthValue();
+    // Obtener fecha actual
+    LocalDate fechaActual = LocalDate.now();
+    int anioActual = fechaActual.getYear();
+    int mesActual = fechaActual.getMonthValue();
 
+    getRootPane().setBorder(BorderFactory.createLineBorder(azulOscuro, 4));
 
-        // Panel de configuración
-        JPanel panelConfig = new JPanel(new GridLayout(2, 2, 5, 5));
-        panelConfig.setBorder(BorderFactory.createTitledBorder("Configuracion"));
+    // Panel de configuración - Fondo azul oscuro y texto blanco
+    JPanel panelConfig = new JPanel(new GridLayout(2, 2, 5, 5));
+    panelConfig.setBackground(azulOscuro);
+    panelConfig.setBorder(BorderFactory.createTitledBorder(
+        BorderFactory.createLineBorder(blanco), 
+        "Configuracion", 
+        TitledBorder.LEFT, 
+        TitledBorder.TOP, 
+        new Font("Arial", Font.BOLD, 12), 
+        blanco // Texto blanco
+    ));
 
-        panelConfig.add(new JLabel("Anio:"));
-        txtAnio = new JTextField(String.valueOf(anioActual));
-        panelConfig.add(txtAnio);
+    // Etiquetas (JLabel) en blanco
+    JLabel lblAnio = new JLabel("Anio:");
+    lblAnio.setForeground(blanco);
+    panelConfig.add(lblAnio);
 
-        panelConfig.add(new JLabel("Mes:"));
-        txtMes = new JTextField(String.valueOf(mesActual));
-        panelConfig.add(txtMes);
+    txtAnio = new JTextField(String.valueOf(anioActual));
+    panelConfig.add(txtAnio);
 
-        add(panelConfig, BorderLayout.NORTH);
+    JLabel lblMes = new JLabel("Mes:");
+    lblMes.setForeground(blanco);
+    panelConfig.add(lblMes);
 
-        // Panel de botones
-        JPanel panelBotones = new JPanel(new FlowLayout());
-        btnLimpiar = new JButton("Limpiar Datos");
-        btnCargar = new JButton("Cargar Datos");
-        panelBotones.add(btnLimpiar);
-        panelBotones.add(btnCargar);
-        add(panelBotones, BorderLayout.SOUTH);
+    txtMes = new JTextField(String.valueOf(mesActual));
+    panelConfig.add(txtMes);
 
-        // Área de log
-        txtLog = new JTextArea();
-        txtLog.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(txtLog);
-        add(scrollPane, BorderLayout.CENTER);
+    add(panelConfig, BorderLayout.NORTH);
 
-        // Configurar acciones
-        btnLimpiar.addActionListener(e -> limpiarDatos());
-        btnCargar.addActionListener(e -> cargarDatos());
-    }
+    // Panel de botones - Fondo azul oscuro
+    JPanel panelBotones = new JPanel(new FlowLayout());
+    panelBotones.setBackground(azulOscuro);
+
+    btnLimpiar = new JButton("Limpiar Datos");
+    btnCargar = new JButton("Cargar Datos");
+
+    panelBotones.add(btnLimpiar);
+    panelBotones.add(btnCargar);
+    add(panelBotones, BorderLayout.SOUTH);
+
+    // Área de log (sin cambios)
+    txtLog = new JTextArea();
+    txtLog.setEditable(false);
+    JScrollPane scrollPane = new JScrollPane(txtLog);
+    add(scrollPane, BorderLayout.CENTER);
+
+    // Configurar acciones (sin cambios)
+    btnLimpiar.addActionListener(e -> limpiarDatos());
+    btnCargar.addActionListener(e -> cargarDatos());
+}
 
     private void limpiarDatos() {
         new Thread(() -> {
+            SwingUtilities.invokeLater(() -> txtLog.setText("=== Nuevo proceso iniciado ===\n")); 
             try {
                 int anio = Integer.parseInt(txtAnio.getText());
                 int mes = Integer.parseInt(txtMes.getText());
@@ -92,7 +116,7 @@ public class CargadorDatosGUI extends JFrame {
                     appendLog("Limpieza de fuentes completada");
                     
                     ProcesadorDatos.limpiarPrecios(conexionDestino, anio, mes);
-                    appendLog("Limpieza de precios completada");
+                    appendLog("Limpieza de precios promedio completada");
                     
                     appendLog("Limpieza completada exitosamente");
                 }
@@ -105,7 +129,8 @@ public class CargadorDatosGUI extends JFrame {
     }
 
     private void cargarDatos() {
-        new Thread(() -> {
+        new Thread(() -> { 
+            SwingUtilities.invokeLater(() -> txtLog.setText("=== Nuevo proceso iniciado ===\n")); 
             try {
                 int anio = Integer.parseInt(txtAnio.getText());
                 int mes = Integer.parseInt(txtMes.getText());
