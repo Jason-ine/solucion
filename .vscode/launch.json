@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "main.java.Main",
+            "projectName": "solucion_48c74343"
+        },
+        {
+            "type": "java",
             "name": "CargarDatos",
             "request": "launch",
             "mainClass": "main.java.CargarDatos",
