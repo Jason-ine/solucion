@@ -24,17 +24,15 @@ public class CargadorDatosGUI extends JFrame {
     setSize(400, 300);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLayout(new BorderLayout());
-    Color azulOscuro = new Color(6, 20, 86); // Color definido
+    Color azulOscuro = new Color(6, 20, 86); 
     Color blanco = Color.WHITE;
 
-    // Obtener fecha actual
     LocalDate fechaActual = LocalDate.now();
     int anioActual = fechaActual.getYear();
-    int mesActual = fechaActual.getMonthValue();
+    int mesActual = fechaActual.getMonthValue()-1;
 
     getRootPane().setBorder(BorderFactory.createLineBorder(azulOscuro, 4));
 
-    // Panel de configuración - Fondo azul oscuro y texto blanco
     JPanel panelConfig = new JPanel(new GridLayout(2, 2, 5, 5));
     panelConfig.setBackground(azulOscuro);
     panelConfig.setBorder(BorderFactory.createTitledBorder(
@@ -43,10 +41,9 @@ public class CargadorDatosGUI extends JFrame {
         TitledBorder.LEFT, 
         TitledBorder.TOP, 
         new Font("Arial", Font.BOLD, 12), 
-        blanco // Texto blanco
+        blanco 
     ));
 
-    // Etiquetas (JLabel) en blanco
     JLabel lblAnio = new JLabel("Anio:");
     lblAnio.setForeground(blanco);
     panelConfig.add(lblAnio);
@@ -63,7 +60,7 @@ public class CargadorDatosGUI extends JFrame {
 
     add(panelConfig, BorderLayout.NORTH);
 
-    // Panel de botones - Fondo azul oscuro
+
     JPanel panelBotones = new JPanel(new FlowLayout());
     panelBotones.setBackground(azulOscuro);
 
@@ -74,16 +71,16 @@ public class CargadorDatosGUI extends JFrame {
     panelBotones.add(btnCargar);
     add(panelBotones, BorderLayout.SOUTH);
 
-    // Área de log (sin cambios)
+    
     txtLog = new JTextArea();
     txtLog.setEditable(false);
     JScrollPane scrollPane = new JScrollPane(txtLog);
     add(scrollPane, BorderLayout.CENTER);
 
-    // Configurar acciones (sin cambios)
+
     btnLimpiar.addActionListener(e -> limpiarDatos());
     btnCargar.addActionListener(e -> cargarDatos());
-}
+    }
 
     private void limpiarDatos() {
         new Thread(() -> {
