@@ -63,7 +63,7 @@ public class ProcesadorDatos {
 
     private static List<String> obtenerDatosIndices(Connection conexion, int anio, int mes) throws SQLException {
         List<String> datos = new ArrayList<>();
-        String sql = "{call dbo.sp_NEW_get_indice_ponderaciones_cotizaciones(?, ?)}";
+        String sql = "{call dbo.sp_get_indice_ponderaciones_cotizaciones(?, ?)}";
      
         try (CallableStatement cstmt = conexion.prepareCall(sql)) {
             cstmt.setInt(1, anio);
@@ -150,7 +150,7 @@ public class ProcesadorDatos {
             rs.getBigDecimal("ponderacion_republica"),
             rs.getInt("grupo_codigo"),
             escapeSQL(rs.getString("grupo_nombre")),
-            escapeSQL(rs.getString("fuente_info")),
+            escapeSQL(rs.getString("grupo_info")),
             rs.getBigDecimal("ponderacion_region"),
             rs.getInt("good_group_region_id"),
             rs.getInt("good_group_id"),

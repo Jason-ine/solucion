@@ -21,7 +21,7 @@ public class CargadorDatosGUI extends JFrame {
 
     private void initialize() {
     setTitle("Cargador de Datos SIP");
-    setSize(400, 300);
+    setSize(600, 400);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLayout(new BorderLayout());
     Color azulOscuro = new Color(6, 20, 86); 
