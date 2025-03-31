@@ -26,6 +26,26 @@ public class ProcesadorExcel {
     
     private static final String RUTA_BASE = "C:\\Users\\jdpivaral\\WebScraping\\solucion\\archivos_excel\\";
 
+    // Método para cargar un archivo específico
+    public static void cargarArchivoEspecifico(Connection conexionDestino, String nombreArchivo) throws Exception {
+        String rutaCompleta = RUTA_BASE + nombreArchivo;
+        String nombreTabla = obtenerNombreTabla(nombreArchivo);
+        procesarArchivoExcel(rutaCompleta, nombreTabla, conexionDestino);
+    }
+
+    // Método auxiliar para mapear nombres de archivo a tablas
+    private static String obtenerNombreTabla(String nombreArchivo) {
+        switch (nombreArchivo) {
+            case "Base_IPM.xlsx": return "SIP_IPM";
+            case "EMPRESAS_IPP.xlsx": return "SIP_IPP";
+            case "Regiones.xlsx": return "SIP_Cobertura_Fuentes";
+            case "Precios_promedio_IPC_x_mes_region.xlsx": return "SIP_IPC_Precios_Promedio";
+            case "Base_IPMC.xlsx": return "SIP_IPMC";
+            default: throw new IllegalArgumentException("Archivo no reconocido: " + nombreArchivo);
+        }
+    }
+
+    // Método original modificado para usar el nuevo sistema
     public static void cargarDesdeExcel(Connection conexionDestino) throws Exception {
         String[] archivos = {
             "Base_IPM.xlsx",
@@ -35,21 +55,11 @@ public class ProcesadorExcel {
             "Base_IPMC.xlsx"
         };
 
-        String[] tablas = {
-            "SIP_IPM",
-            "SIP_IPP",
-            "SIP_Cobertura_Fuentes",
-            "SIP_IPC_Precios_Promedio",
-            "SIP_IPMC"
-        };
-
-
-
-        for (int i = 0; i < archivos.length; i++) {
-            String rutaCompleta = RUTA_BASE + archivos[i];
-            procesarArchivoExcel(rutaCompleta, tablas[i], conexionDestino);
+        for (String archivo : archivos) {
+            cargarArchivoEspecifico(conexionDestino, archivo);
         }
     }
+
 
     private static void procesarArchivoExcel(String rutaExcel, String nombreTabla, Connection conexion) throws Exception {
         try (InputStream archivoExcel = new FileInputStream(rutaExcel);
@@ -483,7 +493,7 @@ public class ProcesadorExcel {
             variedadNombre = obtenerValorCelda(fila.getCell(columnas.get("articulo")));
             regionId = obtenerValorNumerico(fila.getCell(columnas.get("region_id")));
             cantidadBase = obtenerValorNumerico(fila.getCell(columnas.get("cant_b")));
-            precio = obtenerValorNumerico(fila.getCell(columnas.get("pgeo")));
+            precio = new BigDecimal(obtenerValorFormateado18Decimales(fila.getCell(columnas.get("pgeo"))));
             variacion = new BigDecimal(obtenerValorFormateado18Decimales(fila.getCell(columnas.get("variacion"))));
             anio = obtenerValorNumerico(fila.getCell(columnas.get("anio")));
             mes = obtenerValorNumerico(fila.getCell(columnas.get("mes")));

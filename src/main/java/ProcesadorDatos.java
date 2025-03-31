@@ -72,12 +72,12 @@ public class ProcesadorDatos {
             System.out.println("Recuperando datos desde stored procedure...");
             try (ResultSet rs = cstmt.executeQuery()) {
                 int contador = 0;
+                String fila;
                 while (rs.next()) {
-                    String fila = formatearFilaIndices(rs);
+                    fila = formatearFilaIndices(rs);
                     // Verificar si algún registro individual es demasiado grande
                     if (fila.length() > 6000) {
-                        System.err.println("¡ADVERTENCIA! Registro muy grande (" + fila.length() + " chars): " 
-                            + fila.substring(0, Math.min(100, fila.length())) + "...");
+                        System.err.println("¡ADVERTENCIA! Registro muy grande (" + fila.length() + " chars): " + fila.substring(0, Math.min(100, fila.length())) + "...");
                     }
                     datos.add(fila);
                     contador++;
@@ -92,8 +92,6 @@ public class ProcesadorDatos {
         return datos;
     }
 
-
-    
     private static List<FuenteDTO> obtenerDatosFuentes(Connection conexion) throws SQLException {
         List<FuenteDTO> fuentes = new ArrayList<>();
         String sql = "{call dbo.sp_get_fuentes()}";
@@ -140,8 +138,6 @@ public class ProcesadorDatos {
         return fuentes;
     }
 
-
-
     private static String formatearFilaIndices(ResultSet rs) throws SQLException {
         return String.format(
             "(%d, '%s', %.18f, %d, '%s', '%s', %.18f, %d, %d, %d, %s, %.18f, %.18f, %d, %d, %d, %d, %d, '%s', %d, %d, '%s')",
@@ -169,7 +165,6 @@ public class ProcesadorDatos {
             escapeSQL(rs.getString("nombre_mes"))
         );
     }
-    
     
     private static void insertarFuentes(Connection conexion, List<FuenteDTO> fuentes) throws SQLException {
         String sql = "INSERT INTO SIP_IPC_Get_Fuentes ("
@@ -233,17 +228,16 @@ public class ProcesadorDatos {
         }
     }
 
-
     private static String escapeSQL(String valor) {
         if (valor == null) return "";
         return valor.replace("'", "''")
-                   .replace("\n", " ")
-                   .replace("\r", " ")
-                   .replace("\\", "\\\\")
-                   .trim();
+        .replace("\n", " ")
+        .replace("\r", " ")
+        .replace("\\", "\\\\")
+        .trim();
     }
 
-     private static List<String> prepararBloquesDatos(List<String> datos) {
+    private static List<String> prepararBloquesDatos(List<String> datos) {
         List<String> bloques = new ArrayList<>();
         StringBuilder bloqueActual = new StringBuilder();
         int registrosEnBloque = 0;
@@ -273,14 +267,12 @@ public class ProcesadorDatos {
             totalCaracteres += fila.length();
             
             if (i > 0 && i % 100 == 0) {
-                System.out.printf("Procesados %d/%d registros, últimos %d caracteres\n",
-                    i, datos.size(), bloqueActual.length());
+                System.out.printf("Procesados %d/%d registros, últimos %d caracteres\n", i, datos.size(), bloqueActual.length());
             }
         }
 
         if (bloqueActual.length() > 0) {
-            System.out.printf("Creando último bloque #%d: %d registros, %d caracteres\n",
-                bloques.size() + 1, registrosEnBloque, bloqueActual.length());
+            System.out.printf("Creando último bloque #%d: %d registros, %d caracteres\n", bloques.size() + 1, registrosEnBloque, bloqueActual.length());
             agregarBloque(bloques, bloqueActual);
         }
 
@@ -328,7 +320,6 @@ public class ProcesadorDatos {
         System.out.println("Resumen final: " + exitosos + "/" + totalBloques + " bloques procesados exitosamente");
     }
 
-    
     private static void ejecutarSP(Connection conexion, String funcion, int anio, int mes, String datos) throws SQLException {
         String sql = "{call dbo.sp_tran_SIP(?, ?, ?, ?)}";
         try (CallableStatement cstmt = conexion.prepareCall(sql)) {
