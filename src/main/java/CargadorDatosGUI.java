@@ -33,7 +33,6 @@ public class CargadorDatosGUI extends JFrame {
 
         getRootPane().setBorder(BorderFactory.createLineBorder(azulOscuro, 4));
 
-        // Panel de configuración con 3 filas
         JPanel panelConfig = new JPanel(new GridLayout(3, 2, 5, 5));
         panelConfig.setBackground(azulOscuro);
         panelConfig.setBorder(BorderFactory.createTitledBorder(
@@ -45,7 +44,7 @@ public class CargadorDatosGUI extends JFrame {
             blanco 
         ));
 
-        // Año
+        
         JLabel lblAnio = new JLabel("Anio:");
         lblAnio.setForeground(blanco);
         panelConfig.add(lblAnio);
@@ -53,7 +52,7 @@ public class CargadorDatosGUI extends JFrame {
         txtAnio = new JTextField(String.valueOf(anioActual));
         panelConfig.add(txtAnio);
 
-        // Mes
+        
         JLabel lblMes = new JLabel("Mes:");
         lblMes.setForeground(blanco);
         panelConfig.add(lblMes);
@@ -61,7 +60,6 @@ public class CargadorDatosGUI extends JFrame {
         txtMes = new JTextField(String.valueOf(mesActual));
         panelConfig.add(txtMes);
 
-        // Selector de opciones
         JLabel lblOpcion = new JLabel("Opcion:");
         lblOpcion.setForeground(blanco);
         panelConfig.add(lblOpcion);
@@ -81,7 +79,6 @@ public class CargadorDatosGUI extends JFrame {
 
         add(panelConfig, BorderLayout.NORTH);
 
-        // Panel de botones
         JPanel panelBotones = new JPanel(new FlowLayout());
         panelBotones.setBackground(azulOscuro);
 
@@ -92,13 +89,11 @@ public class CargadorDatosGUI extends JFrame {
         panelBotones.add(btnCargar);
         add(panelBotones, BorderLayout.SOUTH);
 
-        // Área de log
         txtLog = new JTextArea();
         txtLog.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(txtLog);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Listeners
         btnLimpiar.addActionListener(e -> limpiarDatos());
         btnCargar.addActionListener(e -> cargarDatos());
     }
@@ -154,7 +149,7 @@ public class CargadorDatosGUI extends JFrame {
                             
                         case "Indices y ponderaciones":
                             ProcesadorDatos.limpiarIndices(conexionDestino, anio, mes);
-                            appendLog("Limpieza de índices y ponderaciones completada");
+                            appendLog("Limpieza de indices y ponderaciones completada");
                             break;
                             
                         case "Fuentes":
@@ -233,7 +228,7 @@ public class CargadorDatosGUI extends JFrame {
                     appendLog("Proceso completado exitosamente");
                 }
             } catch (NumberFormatException ex) {
-                appendLog("Error: Anioo y mes deben ser números validos");
+                appendLog("Error: Anio y mes deben ser numeros validos");
             } catch (Exception ex) {
                 appendLog("Error al cargar datos: " + ex.getMessage());
                 ex.printStackTrace();

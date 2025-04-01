@@ -76,19 +76,19 @@ public class ProcesadorExcel {
             switch (nombreTabla) {
                 case "SIP_IPM":
                     procesarSIP_IPM(hoja, conexion, columnas);
-                    break;
+                break;
                 case "SIP_IPP":
                     procesarSIP_IPP(hoja, conexion, columnas);
-                    break;
+                break;
                 case "SIP_Cobertura_Fuentes":
                     procesarSIP_Cobertura_Fuentes(hoja, conexion, columnas);
-                    break;
+                break;
                 case "SIP_IPC_Precios_Promedio":
                     procesarSIP_IPC_Precios_Promedio(hoja, conexion, columnas);
-                    break;
+                break;
                 case "SIP_IPMC":
                     procesarSIP_IPMC(hoja, conexion, columnas);
-                    break;
+                break;
             }
         }
     }

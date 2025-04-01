@@ -37,27 +37,20 @@ public class ProcesadorDatos {
     }
 
     public static void cargarIndices(Connection conexionOrigen, Connection conexionDestino, int anio, int mes) throws SQLException {
-        // 1. Limpieza inicial
         limpiarIndices(conexionDestino, anio, mes);
         
-        // 2. Obtención de datos
         List<String> datos = obtenerDatosIndices(conexionOrigen, anio, mes);
         
-        // 3. Preparación de bloques
         List<String> bloques = prepararBloquesDatos(datos);
         
-        // 4. Ejecución por bloques
         ejecutarBloques(conexionDestino, bloques, anio, mes);
     }
 
     public static void cargarFuentes(Connection conexionOrigen, Connection conexionDestino) throws SQLException {
-        // 1. Limpieza inicial
         limpiarFuentes(conexionDestino);
         
-        // 2. Obtención de datos
         List<FuenteDTO> datosFuentes = obtenerDatosFuentes(conexionOrigen);
         
-        // 3. Inserción directa
         insertarFuentes(conexionDestino, datosFuentes);
     }
 
@@ -75,7 +68,6 @@ public class ProcesadorDatos {
                 String fila;
                 while (rs.next()) {
                     fila = formatearFilaIndices(rs);
-                    // Verificar si algún registro individual es demasiado grande
                     if (fila.length() > 6000) {
                         System.err.println("¡ADVERTENCIA! Registro muy grande (" + fila.length() + " chars): " + fila.substring(0, Math.min(100, fila.length())) + "...");
                     }
@@ -120,7 +112,6 @@ public class ProcesadorDatos {
                 fuente.setFuenteArea(rs.getString("fuente_area"));
                 fuente.setOrdenEnRuta(rs.getLong("orden_en_ruta"));
                 
-                // Manejo de BigDecimal para coordenadas
                 fuente.setLatitude(rs.getBigDecimal("latitude"));
                 fuente.setLongitude(rs.getBigDecimal("longitude"));
                 fuente.setAltitude(rs.getBigDecimal("altitude"));
@@ -196,7 +187,6 @@ public class ProcesadorDatos {
                 pstmt.setString(paramIndex++, fuente.getFuenteArea());
                 pstmt.setLong(paramIndex++, fuente.getOrdenEnRuta());
                 
-                // Manejo de valores nulos para BigDecimal
                 if (fuente.getLatitude() != null) {
                     pstmt.setBigDecimal(paramIndex++, fuente.getLatitude());
                 } else {
