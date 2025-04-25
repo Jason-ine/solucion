@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: main.java.Main
+Class-Path: Lib/libs/commons-collections4-4.4.jar Lib/libs/commons-compress-1.21.jar Lib/libs/commons-io-2.17.0.jar Lib/libs/log4j-api-2.20.0.jar Lib/libs/log4j-core-2.20.0.jar Lib/libs/mssql-jdbc-12.8.1.jre8.jar Lib/libs/poi-5.2.3.jar Lib/libs/poi-ooxml-5.2.3.jar Lib/libs/poi-ooxml-full-5.2.3.jar Lib/libs/xmlbeans-5.1.1.jar
+Created-By: 17.0.12 (Eclipse Adoptium)

@@ -11,6 +11,7 @@ import java.util.Map;
 public class ProcesadorDatos {
     private static final int MAX_BLOCK_SIZE = 7000;
     private static final int RECORDS_PER_BLOCK = 30;
+    private static final int RECORDS_PER_BLOCK1= 5;
 
     public static void limpiarIndices(Connection conexion, int anio, int mes) throws SQLException {
         ejecutarSP(conexion, "LIMPIAR_IPC_INDICES_PONDERACIONES_COTIZACIONES", anio, mes, "");
@@ -27,13 +28,14 @@ public class ProcesadorDatos {
     public static void limpiarIPP(Connection conexion) throws SQLException {
         ejecutarSP(conexion, "LIMPIAR_IPP", 0, 0, "");
     }
-
     public static void limpiarFuentes(Connection conexion) throws SQLException {
         ejecutarSP(conexion, "LIMPIAR_IPC_GET_FUENTES", 0, 0, "");
     }
-
     public static void limpiarPrecios(Connection conexion, int anio, int mes) throws SQLException {
         ejecutarSP(conexion, "LIMPIAR_IPC_PRECIOS_PROMEDIO", anio, mes, "");
+    }
+    public static void limpiarPreciosRecolectado(Connection conexion, int anio, int mes) throws SQLException{
+        ejecutarSP(conexion, "LIMPIAR_PRECIOS_RECOLECTADOS", anio,mes,"");
     }
 
     public static void cargarIndices(Connection conexionOrigen, Connection conexionDestino, int anio, int mes) throws SQLException {
@@ -44,6 +46,16 @@ public class ProcesadorDatos {
         List<String> bloques = prepararBloquesDatos(datos);
         
         ejecutarBloques(conexionDestino, bloques, anio, mes);
+        
+    }
+    public static void cargarPrecios(Connection conexionOrigen, Connection conexionDestino, int anio, int mes) throws SQLException {
+        limpiarPreciosRecolectado(conexionDestino, anio, mes);
+        
+        List<String> datos = obtenerDatosPreciosRecolectados(conexionOrigen, anio, mes);
+        
+        List<String> bloques = prepararBloquesDatoss(datos);
+        
+        ejecutarBloquess(conexionDestino, bloques, anio, mes);
     }
 
     public static void cargarFuentes(Connection conexionOrigen, Connection conexionDestino) throws SQLException {
@@ -69,6 +81,35 @@ public class ProcesadorDatos {
                 while (rs.next()) {
                     fila = formatearFilaIndices(rs);
                     if (fila.length() > 6000) {
+                        System.err.println("¡ADVERTENCIA! Registro muy grande (" + fila.length() + " chars): " + fila.substring(0, Math.min(100, fila.length())) + "...");
+                    }
+                    datos.add(fila);
+                    contador++;
+                    
+                    if (contador % 500 == 0) {
+                        System.out.println("Registros leídos: " + contador);
+                    }
+                }
+                System.out.println("Total registros obtenidos: " + contador);
+            }
+        }
+        return datos;
+    }
+    private static List<String> obtenerDatosPreciosRecolectados(Connection conexion, int anio, int mes) throws SQLException {
+        List<String> datos = new ArrayList<>();
+        String sql = "{call dbo.sp_get_precios_recolectados_mes(?, ?)}";
+     
+        try (CallableStatement cstmt = conexion.prepareCall(sql)) {
+            cstmt.setInt(1, anio);
+            cstmt.setInt(2, mes);
+            
+            System.out.println("Recuperando datos desde stored procedure...");
+            try (ResultSet rs = cstmt.executeQuery()) {
+                int contador = 0;
+                String fila;
+                while (rs.next()) {
+                    fila = formatearFilaPrecios(rs);
+                    if (fila.length() > 7000) {
                         System.err.println("¡ADVERTENCIA! Registro muy grande (" + fila.length() + " chars): " + fila.substring(0, Math.min(100, fila.length())) + "...");
                     }
                     datos.add(fila);
@@ -156,6 +197,90 @@ public class ProcesadorDatos {
             escapeSQL(rs.getString("nombre_mes"))
         );
     }
+    private static String formatearFilaPrecios(ResultSet rs) throws SQLException {
+        return String.format(
+            "(%d, %d, %d, %d, '%s', %d, '%s', '%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %.2f, %.2f, %.2f, %.2f, %.2f, %.6f, %.20f, %.20f, %.20f, %.4f, %.4f, %.6f, %.20f, %.20f, %d, %.6f, '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s', %d, '%s', %d, '%s', %d, '%s', '%s', '%s', '%s', '%s')",
+            rs.getInt("pk"),
+            rs.getInt("region"),
+            rs.getInt("anio"),
+            rs.getInt("mes"),
+            escapeSQL(rs.getString("decada")),
+            rs.getInt("fuente_codigo"),
+            escapeSQL(rs.getString("fuente_nombre")),
+            escapeSQL(rs.getString("fuente_direccion")),
+            escapeSQL(rs.getString("ine_poll_id")),
+            escapeSQL(rs.getString("fuente_tipo")),
+            escapeSQL(rs.getString("estado_boleta")),
+            rs.getInt("usuario_codigo"),
+            escapeSQL(rs.getString("email")),
+            escapeSQL(rs.getString("Departamento")),
+            escapeSQL(rs.getString("Municipio")),
+            escapeSQL(rs.getString("estado_fuente")),
+            escapeSQL(rs.getString("codigo_articulo")),
+            escapeSQL(rs.getString("articulo")),
+            escapeSQL(rs.getString("marca")),
+            escapeSQL(rs.getString("presentacion")),
+            escapeSQL(rs.getString("tamano")),
+            escapeSQL(rs.getString("materiales")),
+            escapeSQL(rs.getString("calidad")),
+            escapeSQL(rs.getString("especificaciones_1")),
+            escapeSQL(rs.getString("especificaciones_2")),
+            escapeSQL(rs.getString("especificaciones_3")),
+            escapeSQL(rs.getString("procedencia")),
+            escapeSQL(rs.getString("tipo_precio")),
+            escapeSQL(rs.getString("estado_variedad")),
+            escapeSQL(rs.getString("periodicidad")),
+            escapeSQL(rs.getString("tipo_unidad_medida")),
+            rs.getObject("cantidad_base") != null ? rs.getBigDecimal("cantidad_base") : BigDecimal.ZERO,
+            rs.getObject("cantidad_anterior") != null ? rs.getBigDecimal("cantidad_anterior") : BigDecimal.ZERO,
+            rs.getObject("cantidad_actual") != null ? rs.getBigDecimal("cantidad_actual") : BigDecimal.ZERO,
+            rs.getObject("precio_anterior") != null ? rs.getBigDecimal("precio_anterior") : BigDecimal.ZERO,
+            rs.getObject("precio_actual") != null ? rs.getBigDecimal("precio_actual") : BigDecimal.ZERO,
+            rs.getObject("precio_base") != null ? rs.getBigDecimal("precio_base") : BigDecimal.ZERO,
+            rs.getObject("variacion_cantidad_base") != null ? rs.getBigDecimal("variacion_cantidad_base") : BigDecimal.ZERO,
+            rs.getObject("variacion_cantidad_anterior") != null ? rs.getBigDecimal("variacion_cantidad_anterior") : BigDecimal.ZERO,
+            rs.getObject("variacion_precio_anterior") != null ? rs.getBigDecimal("variacion_precio_anterior") : BigDecimal.ZERO,
+            rs.getObject("valuacion_actual") != null ? rs.getBigDecimal("valuacion_actual") : BigDecimal.ZERO,
+            rs.getObject("valuacion_anterior") != null ? rs.getBigDecimal("valuacion_anterior") : BigDecimal.ZERO,
+            rs.getObject("variacion_porcentual") != null ? rs.getBigDecimal("variacion_porcentual") : BigDecimal.ZERO,
+            rs.getObject("valuacion_unidad_anterior") != null ? rs.getBigDecimal("valuacion_unidad_anterior") : BigDecimal.ZERO,
+            rs.getObject("valuacion_unidad_actual") != null ? rs.getBigDecimal("valuacion_unidad_actual") : BigDecimal.ZERO,
+            rs.getInt("id_anterior"),
+            rs.getObject("variacion_unidad") != null ? rs.getBigDecimal("variacion_unidad") : BigDecimal.ZERO,
+            escapeSQL(rs.getString("estado_registro")),
+            escapeSQL(rs.getString("estado_imputacion")), 
+            escapeSQL(rs.getString("razon_retorno")),
+            escapeSQL(rs.getString("division_nombre")),
+            rs.getInt("tp_poll_status"),
+            rs.getInt("poll_tp_reason_to_return"),
+            rs.getInt("good_id"),
+            rs.getInt("tp_decade"),
+            rs.getInt("tp_periodicity"),
+            rs.getInt("tp_unit_measure"),
+            rs.getInt("tp_source_type"),
+            rs.getInt("detail_tp_poll_status"),
+            rs.getInt("Codigo_Departamento"),
+            rs.getInt("Codigo_Municipio"),
+            rs.getInt("tp_poll_impute_status"),
+            rs.getInt("detail_tp_reason_to_return"),
+            rs.getInt("territorial_area_id"),
+            rs.getInt("price_type_id"),
+            rs.getInt("good_tp_status"),
+            rs.getInt("poll_id"),
+            rs.getInt("good_group_id"),
+            escapeSQL(rs.getString("producto_nombre")),
+            rs.getInt("good_technical_issue_id"),
+            escapeSQL(rs.getString("nt_comentarios")),
+            rs.getInt("nt_tipo"),
+            escapeSQL(rs.getString("nt_tipo_nombre")),
+            rs.getInt("nt_razon"),
+            escapeSQL(rs.getString("nt_razon_nombre")),
+            rs.getObject("formacion_nacional") != null ? escapeSQL(rs.getString("formacion_nacional")) : "0",
+            escapeSQL(rs.getString("calculo_ipc")),
+            escapeSQL(rs.getString("observaciones")),
+            escapeSQL(rs.getString("comentarios_revision"))
+        );
+    }
     
     private static void insertarFuentes(Connection conexion, List<FuenteDTO> fuentes) throws SQLException {
         String sql = "INSERT INTO SIP_IPC_Get_Fuentes ("
@@ -221,10 +346,10 @@ public class ProcesadorDatos {
     private static String escapeSQL(String valor) {
         if (valor == null) return "";
         return valor.replace("'", "''")
-        .replace("\n", " ")
-        .replace("\r", " ")
-        .replace("\\", "\\\\")
-        .trim();
+                   .replace("\n", " ")
+                   .replace("\r", " ")
+                   .replace("\\", "\\\\")
+                   .trim();
     }
 
     private static List<String> prepararBloquesDatos(List<String> datos) {
@@ -238,6 +363,48 @@ public class ProcesadorDatos {
             int longitudFila = fila.length() + (bloqueActual.length() > 0 ? 1 : 0);
             
             if ((totalCaracteres + longitudFila) > MAX_BLOCK_SIZE || registrosEnBloque >= RECORDS_PER_BLOCK) {
+                System.out.printf("Creando bloque #%d: %d registros, %d caracteres\n",
+                    bloques.size() + 1, registrosEnBloque, bloqueActual.length());
+                
+                agregarBloque(bloques, bloqueActual);
+                bloqueActual = new StringBuilder();
+                registrosEnBloque = 0;
+                totalCaracteres = 0;
+            }
+
+            if (bloqueActual.length() > 0) {
+                bloqueActual.append(",");
+                totalCaracteres++;
+            }
+            
+            bloqueActual.append(fila);
+            registrosEnBloque++;
+            totalCaracteres += fila.length();
+            
+            if (i > 0 && i % 100 == 0) {
+                System.out.printf("Procesados %d/%d registros, últimos %d caracteres\n", i, datos.size(), bloqueActual.length());
+            }
+        }
+
+        if (bloqueActual.length() > 0) {
+            System.out.printf("Creando último bloque #%d: %d registros, %d caracteres\n", bloques.size() + 1, registrosEnBloque, bloqueActual.length());
+            agregarBloque(bloques, bloqueActual);
+        }
+
+        System.out.println("Total bloques generados: " + bloques.size());
+        return bloques;
+    }
+    private static List<String> prepararBloquesDatoss(List<String> datos) {
+        List<String> bloques = new ArrayList<>();
+        StringBuilder bloqueActual = new StringBuilder();
+        int registrosEnBloque = 0;
+        int totalCaracteres = 0;
+
+        for (int i = 0; i < datos.size(); i++) {
+            String fila = datos.get(i);
+            int longitudFila = fila.length() + (bloqueActual.length() > 0 ? 1 : 0);
+            
+            if ((totalCaracteres + longitudFila) > MAX_BLOCK_SIZE || registrosEnBloque >= RECORDS_PER_BLOCK1) {
                 System.out.printf("Creando bloque #%d: %d registros, %d caracteres\n",
                     bloques.size() + 1, registrosEnBloque, bloqueActual.length());
                 
@@ -290,6 +457,36 @@ public class ProcesadorDatos {
             
             try {
                 ejecutarSP(conexion, "ADD_IPC_INDICES_PONDERACIONES_COTIZACIONES", anio, mes, bloque);
+                exitosos++;
+            } catch (SQLException e) {
+                System.err.printf("¡ERROR en bloque %d/%d (tamaño: %d chars)! Código: %s, Estado: %s\n",
+                    i+1, totalBloques, bloque.length(), e.getErrorCode(), e.getSQLState());
+                System.err.println("Mensaje: " + e.getMessage());
+                
+                System.err.println("Inicio del bloque problemático:\n" + 
+                    bloque.substring(0, Math.min(200, bloque.length())));
+                System.err.println("\nFin del bloque problemático:\n" + 
+                    bloque.substring(Math.max(0, bloque.length() - 200)));
+            }
+            
+            if ((i+1) % 20 == 0) {
+                try { Thread.sleep(300); } catch (InterruptedException e) {}
+            }
+        }
+        
+        System.out.println("Resumen final: " + exitosos + "/" + totalBloques + " bloques procesados exitosamente");
+    }
+    private static void ejecutarBloquess(Connection conexion, List<String> bloques, int anio, int mes) throws SQLException {
+        int totalBloques = bloques.size();
+        int exitosos = 0;
+        
+        for (int i = 0; i < bloques.size(); i++) {
+            String bloque = bloques.get(i);
+            System.out.printf("[Bloque %d/%d] Tamaño: %d caracteres\n", 
+                i+1, totalBloques, bloque.length());
+            
+            try {
+                ejecutarSP(conexion, "ADD_IPC_PRECIOS_RECOLECTADOS", anio, mes, bloque);
                 exitosos++;
             } catch (SQLException e) {
                 System.err.printf("¡ERROR en bloque %d/%d (tamaño: %d chars)! Código: %s, Estado: %s\n",

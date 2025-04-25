@@ -3,6 +3,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CargadorDatosGUI",
+            "request": "launch",
+            "mainClass": "main.java.CargadorDatosGUI",
+            "projectName": "solucion_48c74343"
+        },
+        {
+            "type": "java",
             "name": "Main",
             "request": "launch",
             "mainClass": "main.java.Main",
