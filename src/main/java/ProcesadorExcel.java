@@ -24,7 +24,9 @@ import java.util.Locale;
 @SuppressWarnings("unused")
 public class ProcesadorExcel {
     
-    private static final String RUTA_BASE = "C:\\Users\\jdpivaral\\WebScraping\\solucion\\archivos_excel\\";
+private static final String RUTA_BASE =
+    "C:\\Users\\eamayen\\OneDrive - ine.gob.gt\\Escritorio\\Tableros\\";
+
 
     public static void cargarArchivoEspecifico(Connection conexionDestino, String nombreArchivo) throws Exception {
         String rutaCompleta = RUTA_BASE + nombreArchivo;
@@ -397,7 +399,7 @@ public class ProcesadorExcel {
             codigoVariedad = obtenerValorNumerico(fila.getCell(columnas.get("codigo_articulo")));
             variedadNombre = obtenerValorCelda(fila.getCell(columnas.get("articulo")));
             regionId = obtenerValorNumerico(fila.getCell(columnas.get("region")));
-            cantidadBase = obtenerValorNumerico(fila.getCell(columnas.get("cant_b")));
+            cantidadBase = obtenerValorNumerico(fila.getCell(columnas.get("cant_base")));
             precio = new BigDecimal(obtenerValorFormateado18Decimales(fila.getCell(columnas.get("pgeo"))));
             variacion = new BigDecimal(obtenerValorFormateado18Decimales(fila.getCell(columnas.get("variacion"))));
             anio = obtenerValorNumerico(fila.getCell(columnas.get("anio")));

@@ -9,10 +9,9 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class ProcesadorDatos {
-    private static final int MAX_BLOCK_SIZE = 7000;
-    private static final int RECORDS_PER_BLOCK = 30;
-    private static final int RECORDS_PER_BLOCK1= 5;
-
+    private static final int MAX_BLOCK_SIZE = 500000;
+    private static final int RECORDS_PER_BLOCK = 50;
+    private static final int RECORDS_PER_BLOCK1= 350;
     public static void limpiarIndices(Connection conexion, int anio, int mes) throws SQLException {
         ejecutarSP(conexion, "LIMPIAR_IPC_INDICES_PONDERACIONES_COTIZACIONES", anio, mes, "");
     }
@@ -37,7 +36,6 @@ public class ProcesadorDatos {
     public static void limpiarPreciosRecolectado(Connection conexion, int anio, int mes) throws SQLException{
         ejecutarSP(conexion, "LIMPIAR_PRECIOS_RECOLECTADOS", anio,mes,"");
     }
-
     public static void cargarIndices(Connection conexionOrigen, Connection conexionDestino, int anio, int mes) throws SQLException {
         limpiarIndices(conexionDestino, anio, mes);
         
@@ -57,7 +55,6 @@ public class ProcesadorDatos {
         
         ejecutarBloquess(conexionDestino, bloques, anio, mes);
     }
-
     public static void cargarFuentes(Connection conexionOrigen, Connection conexionDestino) throws SQLException {
         limpiarFuentes(conexionDestino);
         
@@ -65,7 +62,6 @@ public class ProcesadorDatos {
         
         insertarFuentes(conexionDestino, datosFuentes);
     }
-
     private static List<String> obtenerDatosIndices(Connection conexion, int anio, int mes) throws SQLException {
         List<String> datos = new ArrayList<>();
         String sql = "{call dbo.sp_get_indice_ponderaciones_cotizaciones(?, ?)}";
@@ -198,90 +194,95 @@ public class ProcesadorDatos {
         );
     }
     private static String formatearFilaPrecios(ResultSet rs) throws SQLException {
-        return String.format(
-            "(%d, %d, %d, %d, '%s', %d, '%s', '%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', %.2f, %.2f, %.2f, %.2f, %.2f, %.6f, %.20f, %.20f, %.20f, %.4f, %.4f, %.6f, %.20f, %.20f, %d, %.6f, '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '%s', %d, '%s', %d, '%s', %d, '%s', '%s', '%s', '%s', '%s')",
-            rs.getInt("pk"),
-            rs.getInt("region"),
-            rs.getInt("anio"),
-            rs.getInt("mes"),
-            escapeSQL(rs.getString("decada")),
-            rs.getInt("fuente_codigo"),
-            escapeSQL(rs.getString("fuente_nombre")),
-            escapeSQL(rs.getString("fuente_direccion")),
-            escapeSQL(rs.getString("ine_poll_id")),
-            escapeSQL(rs.getString("fuente_tipo")),
-            escapeSQL(rs.getString("estado_boleta")),
-            rs.getInt("usuario_codigo"),
-            escapeSQL(rs.getString("email")),
-            escapeSQL(rs.getString("Departamento")),
-            escapeSQL(rs.getString("Municipio")),
-            escapeSQL(rs.getString("estado_fuente")),
-            escapeSQL(rs.getString("codigo_articulo")),
-            escapeSQL(rs.getString("articulo")),
-            escapeSQL(rs.getString("marca")),
-            escapeSQL(rs.getString("presentacion")),
-            escapeSQL(rs.getString("tamano")),
-            escapeSQL(rs.getString("materiales")),
-            escapeSQL(rs.getString("calidad")),
-            escapeSQL(rs.getString("especificaciones_1")),
-            escapeSQL(rs.getString("especificaciones_2")),
-            escapeSQL(rs.getString("especificaciones_3")),
-            escapeSQL(rs.getString("procedencia")),
-            escapeSQL(rs.getString("tipo_precio")),
-            escapeSQL(rs.getString("estado_variedad")),
-            escapeSQL(rs.getString("periodicidad")),
-            escapeSQL(rs.getString("tipo_unidad_medida")),
-            rs.getObject("cantidad_base") != null ? rs.getBigDecimal("cantidad_base") : BigDecimal.ZERO,
-            rs.getObject("cantidad_anterior") != null ? rs.getBigDecimal("cantidad_anterior") : BigDecimal.ZERO,
-            rs.getObject("cantidad_actual") != null ? rs.getBigDecimal("cantidad_actual") : BigDecimal.ZERO,
-            rs.getObject("precio_anterior") != null ? rs.getBigDecimal("precio_anterior") : BigDecimal.ZERO,
-            rs.getObject("precio_actual") != null ? rs.getBigDecimal("precio_actual") : BigDecimal.ZERO,
-            rs.getObject("precio_base") != null ? rs.getBigDecimal("precio_base") : BigDecimal.ZERO,
-            rs.getObject("variacion_cantidad_base") != null ? rs.getBigDecimal("variacion_cantidad_base") : BigDecimal.ZERO,
-            rs.getObject("variacion_cantidad_anterior") != null ? rs.getBigDecimal("variacion_cantidad_anterior") : BigDecimal.ZERO,
-            rs.getObject("variacion_precio_anterior") != null ? rs.getBigDecimal("variacion_precio_anterior") : BigDecimal.ZERO,
-            rs.getObject("valuacion_actual") != null ? rs.getBigDecimal("valuacion_actual") : BigDecimal.ZERO,
-            rs.getObject("valuacion_anterior") != null ? rs.getBigDecimal("valuacion_anterior") : BigDecimal.ZERO,
-            rs.getObject("variacion_porcentual") != null ? rs.getBigDecimal("variacion_porcentual") : BigDecimal.ZERO,
-            rs.getObject("valuacion_unidad_anterior") != null ? rs.getBigDecimal("valuacion_unidad_anterior") : BigDecimal.ZERO,
-            rs.getObject("valuacion_unidad_actual") != null ? rs.getBigDecimal("valuacion_unidad_actual") : BigDecimal.ZERO,
-            rs.getInt("id_anterior"),
-            rs.getObject("variacion_unidad") != null ? rs.getBigDecimal("variacion_unidad") : BigDecimal.ZERO,
-            escapeSQL(rs.getString("estado_registro")),
-            escapeSQL(rs.getString("estado_imputacion")), 
-            escapeSQL(rs.getString("razon_retorno")),
-            escapeSQL(rs.getString("division_nombre")),
-            rs.getInt("tp_poll_status"),
-            rs.getInt("poll_tp_reason_to_return"),
-            rs.getInt("good_id"),
-            rs.getInt("tp_decade"),
-            rs.getInt("tp_periodicity"),
-            rs.getInt("tp_unit_measure"),
-            rs.getInt("tp_source_type"),
-            rs.getInt("detail_tp_poll_status"),
-            rs.getInt("Codigo_Departamento"),
-            rs.getInt("Codigo_Municipio"),
-            rs.getInt("tp_poll_impute_status"),
-            rs.getInt("detail_tp_reason_to_return"),
-            rs.getInt("territorial_area_id"),
-            rs.getInt("price_type_id"),
-            rs.getInt("good_tp_status"),
-            rs.getInt("poll_id"),
-            rs.getInt("good_group_id"),
-            escapeSQL(rs.getString("producto_nombre")),
-            rs.getInt("good_technical_issue_id"),
-            escapeSQL(rs.getString("nt_comentarios")),
-            rs.getInt("nt_tipo"),
-            escapeSQL(rs.getString("nt_tipo_nombre")),
-            rs.getInt("nt_razon"),
-            escapeSQL(rs.getString("nt_razon_nombre")),
-            rs.getObject("formacion_nacional") != null ? escapeSQL(rs.getString("formacion_nacional")) : "0",
-            escapeSQL(rs.getString("calculo_ipc")),
-            escapeSQL(rs.getString("observaciones")),
-            escapeSQL(rs.getString("comentarios_revision"))
-        );
-    }
-    
+    return String.format(
+        "("
+      + "%d, %d, %d, %d, '%s', %d, '%s', '%s', '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', "
+      + "%.2f, %.2f, %.2f, %.2f, %.2f, %.6f, %.20f, %.20f, %.20f, %.4f, %.4f, %.6f, %.20f, %.20f, %d, %.6f, '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, "
+      + "'%s', %d, '%s', %d, '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s'"
+      + ")",
+        rs.getInt("pk"),
+        rs.getInt("region"),
+        rs.getInt("anio"),
+        rs.getInt("mes"),
+        escapeSQL(rs.getString("decada")),
+        rs.getInt("fuente_codigo"),
+        escapeSQL(rs.getString("fuente_nombre")),
+        escapeSQL(rs.getString("fuente_direccion")),
+        escapeSQL(rs.getString("ine_poll_id")),
+        escapeSQL(rs.getString("fuente_tipo")),
+        rs.getInt("usuario_codigo"),
+        escapeSQL(rs.getString("email")),
+        escapeSQL(rs.getString("Departamento")),
+        escapeSQL(rs.getString("Municipio")),
+        escapeSQL(rs.getString("estado_fuente")),
+        escapeSQL(rs.getString("codigo_articulo")),
+        escapeSQL(rs.getString("articulo")),
+        escapeSQL(rs.getString("marca")),
+        escapeSQL(rs.getString("presentacion")),
+        escapeSQL(rs.getString("tamano")),
+        escapeSQL(rs.getString("materiales")),
+        escapeSQL(rs.getString("calidad")),
+        escapeSQL(rs.getString("especificaciones_1")),
+        escapeSQL(rs.getString("especificaciones_2")),
+        escapeSQL(rs.getString("especificaciones_3")),
+        escapeSQL(rs.getString("procedencia")),
+        escapeSQL(rs.getString("tipo_precio")),
+        escapeSQL(rs.getString("estado_variedad")),
+        escapeSQL(rs.getString("periodicidad")),
+        escapeSQL(rs.getString("tipo_unidad_medida")),
+        rs.getObject("cantidad_base") != null ? rs.getBigDecimal("cantidad_base").doubleValue() : 0.0,
+        rs.getObject("cantidad_anterior") != null ? rs.getBigDecimal("cantidad_anterior").doubleValue() : 0.0,
+        rs.getObject("cantidad_actual") != null ? rs.getBigDecimal("cantidad_actual").doubleValue() : 0.0,
+        rs.getObject("precio_anterior") != null ? rs.getBigDecimal("precio_anterior").doubleValue() : 0.0,
+        rs.getObject("precio_actual") != null ? rs.getBigDecimal("precio_actual").doubleValue() : 0.0,
+        rs.getObject("precio_base") != null ? rs.getBigDecimal("precio_base").doubleValue() : 0.0,
+        rs.getObject("variacion_cantidad_base") != null ? rs.getBigDecimal("variacion_cantidad_base").doubleValue() : 0.0,
+        rs.getObject("variacion_cantidad_anterior") != null ? rs.getBigDecimal("variacion_cantidad_anterior").doubleValue() : 0.0,
+        rs.getObject("variacion_precio_anterior") != null ? rs.getBigDecimal("variacion_precio_anterior").doubleValue() : 0.0,
+        rs.getObject("valuacion_actual") != null ? rs.getBigDecimal("valuacion_actual").doubleValue() : 0.0,
+        rs.getObject("valuacion_anterior") != null ? rs.getBigDecimal("valuacion_anterior").doubleValue() : 0.0,
+        rs.getObject("variacion_porcentual") != null ? rs.getBigDecimal("variacion_porcentual").doubleValue() : 0.0,
+        rs.getObject("valuacion_unidad_anterior") != null ? rs.getBigDecimal("valuacion_unidad_anterior").doubleValue() : 0.0,
+        rs.getObject("valuacion_unidad_actual") != null ? rs.getBigDecimal("valuacion_unidad_actual").doubleValue() : 0.0,
+        rs.getInt("id_anterior"),
+        rs.getObject("variacion_unidad") != null ? rs.getBigDecimal("variacion_unidad").doubleValue() : 0.0,
+        escapeSQL(rs.getString("estado_registro")),
+        escapeSQL(rs.getString("estado_imputacion")),
+        escapeSQL(rs.getString("razon_retorno")),
+        escapeSQL(rs.getString("division_nombre")),
+        rs.getInt("poll_tp_reason_to_return"),
+        rs.getInt("good_id"),
+        rs.getInt("tp_decade"),
+        rs.getInt("tp_periodicity"),
+        rs.getInt("tp_unit_measure"),
+        rs.getInt("tp_source_type"),
+        rs.getInt("detail_tp_poll_status"),
+        rs.getInt("Codigo_Departamento"),
+        rs.getInt("Codigo_Municipio"),
+        rs.getInt("tp_poll_impute_status"),
+        rs.getInt("detail_tp_reason_to_return"),
+        rs.getInt("territorial_area_id"),
+        rs.getInt("price_type_id"),
+        rs.getInt("good_tp_status"),
+        rs.getInt("poll_id"),
+        rs.getInt("good_group_id"),
+        escapeSQL(rs.getString("producto_nombre")),
+        rs.getInt("good_technical_issue_id"),
+        escapeSQL(rs.getString("nt_comentarios")),
+        rs.getInt("nt_tipo"),
+        escapeSQL(rs.getString("nt_tipo_nombre")),
+        rs.getInt("nt_razon"),
+        escapeSQL(rs.getString("nt_razon_nombre")),
+        escapeSQL(rs.getString("formacion_nacional")),  // CHAR(1)
+        escapeSQL(rs.getString("calculo_ipc")), 
+        escapeSQL(rs.getString("observaciones")),
+        escapeSQL(rs.getString("comentarios_revision")),
+        escapeSQL(rs.getString("CBA_rural")),
+        escapeSQL(rs.getString("CBA_urbana")),
+        escapeSQL(rs.getString("PCI"))
+    );
+}
+
     private static void insertarFuentes(Connection conexion, List<FuenteDTO> fuentes) throws SQLException {
         String sql = "INSERT INTO SIP_IPC_Get_Fuentes ("
                 + "region_id, departamento, municipio, decada, dia_visita, dia_visita_obligatorio, "
@@ -447,65 +448,79 @@ public class ProcesadorDatos {
     }
 
     private static void ejecutarBloques(Connection conexion, List<String> bloques, int anio, int mes) throws SQLException {
-        int totalBloques = bloques.size();
-        int exitosos = 0;
-        
-        for (int i = 0; i < bloques.size(); i++) {
+    final String sql = "{call dbo.sp_tran_SIP(?, ?, ?, ?)}";
+    int totalBloques = bloques.size();
+    int exitosos = 0;
+
+    boolean oldAutoCommit = conexion.getAutoCommit();
+    conexion.setAutoCommit(false);
+
+    try (CallableStatement cstmt = conexion.prepareCall(sql)) {
+        for (int i = 0; i < totalBloques; i++) {
             String bloque = bloques.get(i);
-            System.out.printf("[Bloque %d/%d] Tamaño: %d caracteres\n", 
-                i+1, totalBloques, bloque.length());
-            
-            try {
-                ejecutarSP(conexion, "ADD_IPC_INDICES_PONDERACIONES_COTIZACIONES", anio, mes, bloque);
-                exitosos++;
-            } catch (SQLException e) {
-                System.err.printf("¡ERROR en bloque %d/%d (tamaño: %d chars)! Código: %s, Estado: %s\n",
-                    i+1, totalBloques, bloque.length(), e.getErrorCode(), e.getSQLState());
-                System.err.println("Mensaje: " + e.getMessage());
-                
-                System.err.println("Inicio del bloque problemático:\n" + 
-                    bloque.substring(0, Math.min(200, bloque.length())));
-                System.err.println("\nFin del bloque problemático:\n" + 
-                    bloque.substring(Math.max(0, bloque.length() - 200)));
+            System.out.printf("[Bloque %d/%d] Tamaño: %d caracteres%n", i+1, totalBloques, bloque.length());
+
+            cstmt.setString(1, "ADD_IPC_INDICES_PONDERACIONES_COTIZACIONES");
+            cstmt.setInt(2, anio);
+            cstmt.setInt(3, mes);
+            cstmt.setString(4, bloque);
+
+            cstmt.execute();
+            exitosos++;
+
+            cstmt.clearParameters();
+
+            if ((i + 1) % 10 == 0) {
+                conexion.commit();
             }
-            
-            if ((i+1) % 20 == 0) {
-                try { Thread.sleep(300); } catch (InterruptedException e) {}
+
+            if ((i + 1) % 20 == 0) {
+                try { Thread.sleep(300); } catch (InterruptedException ignored) { }
             }
         }
-        
-        System.out.println("Resumen final: " + exitosos + "/" + totalBloques + " bloques procesados exitosamente");
+
+        conexion.commit();
+    } catch (SQLException e) {
+        conexion.rollback();
+        throw e;
+    } finally {
+        conexion.setAutoCommit(oldAutoCommit);
     }
+
+    System.out.printf("Resumen final: %d/%d bloques procesados exitosamente%n", exitosos, totalBloques);
+}
+
     private static void ejecutarBloquess(Connection conexion, List<String> bloques, int anio, int mes) throws SQLException {
-        int totalBloques = bloques.size();
-        int exitosos = 0;
-        
-        for (int i = 0; i < bloques.size(); i++) {
-            String bloque = bloques.get(i);
-            System.out.printf("[Bloque %d/%d] Tamaño: %d caracteres\n", 
-                i+1, totalBloques, bloque.length());
-            
-            try {
-                ejecutarSP(conexion, "ADD_IPC_PRECIOS_RECOLECTADOS", anio, mes, bloque);
-                exitosos++;
-            } catch (SQLException e) {
-                System.err.printf("¡ERROR en bloque %d/%d (tamaño: %d chars)! Código: %s, Estado: %s\n",
-                    i+1, totalBloques, bloque.length(), e.getErrorCode(), e.getSQLState());
-                System.err.println("Mensaje: " + e.getMessage());
-                
-                System.err.println("Inicio del bloque problemático:\n" + 
-                    bloque.substring(0, Math.min(200, bloque.length())));
-                System.err.println("\nFin del bloque problemático:\n" + 
-                    bloque.substring(Math.max(0, bloque.length() - 200)));
-            }
-            
-            if ((i+1) % 20 == 0) {
-                try { Thread.sleep(300); } catch (InterruptedException e) {}
-            }
+    final String sql = "{call dbo.sp_tran_SIP(?, ?, ?, ?)}";
+    boolean oldAuto = conexion.getAutoCommit();
+    conexion.setAutoCommit(false);
+
+    int exitosos = 0;
+    try (CallableStatement cstmt = conexion.prepareCall(sql)) {
+        for (String bloque : bloques) {
+            cstmt.setString(1, "ADD_IPC_PRECIOS_RECOLECTADOS");
+            cstmt.setInt(2, anio);
+            cstmt.setInt(3, mes);
+            cstmt.setString(4, bloque);
+            cstmt.addBatch();
         }
-        
-        System.out.println("Resumen final: " + exitosos + "/" + totalBloques + " bloques procesados exitosamente");
+
+        int[] results = cstmt.executeBatch();
+        conexion.commit();
+
+        for (int r : results) {
+            if (r == Statement.SUCCESS_NO_INFO || r > 0) exitosos++;
+        }
+
+    } catch (SQLException e) {
+        conexion.rollback();
+        throw e;
+    } finally {
+        conexion.setAutoCommit(oldAuto);
     }
+
+    System.out.printf("Resumen final: %d/%d bloques procesados exitosamente%n", exitosos, bloques.size());
+}
 
     private static void ejecutarSP(Connection conexion, String funcion, int anio, int mes, String datos) throws SQLException {
         String sql = "{call dbo.sp_tran_SIP(?, ?, ?, ?)}";

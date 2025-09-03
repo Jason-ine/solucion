@@ -34,7 +34,6 @@ public class FuenteDTO {
    
     public FuenteDTO() {
     }
-
    
     public Long getRegionId() {
         return regionId;
